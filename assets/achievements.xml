@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<achievements>
+	<oneAchievement>
+		<name>Liberty Campaign</name>
+		<content>
+			<oneAchievement>
+				<name>Mara Sara Missions</name>
+				<url>achievements/category/3211278</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Colonist Missions</name>
+				<url>achievements/category/3211279</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Covert Missions</name>
+				<url>achievements/category/3211280</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Rebellion Missions</name>
+				<url>achievements/category/3211281</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Artifact Missions</name>
+				<url>achievements/category/3211282</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Prophecy Missions</name>
+				<url>achievements/category/3211283</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Final Missions</name>
+				<url>achievements/category/3211284</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Story Mode</name>
+				<url>achievements/category/3211285</url>
+			</oneAchievement>
+		</content>
+	</oneAchievement>
+	<oneAchievement>
+		<name>Exploration</name>
+		<content>
+			<oneAchievement>
+				<name>Guide One</name>
+				<url>achievements/category/4325398</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Guide Two</name>
+				<url>achievements/category/4325399</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Guide Three</name>
+				<url>achievements/category/4325400</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Challenges</name>
+				<url>achievements/category/4325401</url>
+			</oneAchievement>
+		</content>
+	</oneAchievement>
+	<oneAchievement>
+		<name>Custom Game</name>
+		<content>
+			<oneAchievement>
+				<name>Medium A.I.</name>
+				<url>achievements/category/4325392</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Hard A.I.</name>
+				<url>achievements/category/4325395</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Very Hard A.I.</name>
+				<url>achievements/category/4325396</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Insane A.I.</name>
+				<url>achievements/category/4325402</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Outmatched</name>
+				<url>achievements/category/4325397</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Blizzard Mods</name>
+				<url>achievements/category/3211287</url>
+			</oneAchievement>
+		</content>
+	</oneAchievement>
+	<oneAchievement>
+		<name>Cooperative</name>
+		<content>
+			<oneAchievement>
+				<name>Medium A.I.</name>
+				<url>achievements/category/4325386</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Hard A.I.</name>
+				<url>achievements/category/4325387</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Very Hard A.I.</name>
+				<url>achievements/category/4325388</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Insane A.I.</name>
+				<url>achievements/category/4325389</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Race A.I.</name>
+				<url>achievements/category/4325390</url>
+			</oneAchievement>
+		</content>
+	</oneAchievement>	
+	<oneAchievement>
+		<name>Quick Match</name>
+		<content>
+			<oneAchievement>
+				<name>Solo League</name>
+				<url>achievements/category/4325378</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Team League</name>
+				<url>achievements/category/4325385</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Competitive</name>
+				<url>achievements/category/4325391</url>
+			</oneAchievement>
+		</content>
+	</oneAchievement>
+	<oneAchievement>
+		<name>Combat</name>
+		<content>
+			<oneAchievement>
+				<name>Economy</name>
+				<url>achievements/category/3211270</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Melee Combat</name>
+				<url>achievements/category/3211271</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>League Combat</name>
+				<url>achievements/category/3211272</url>
+			</oneAchievement>
+		</content>
+	</oneAchievement>
+	<oneAchievement>
+		<name>Feats of Strength</name>
+		<url>achievements/category/4325394</url>
+	</oneAchievement>
+</achievements>

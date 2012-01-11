@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Untitled Document</title>
+</head>
+
+<body>
+<!--
+<form action="http://sc2ranks.com/custom_update" method="post">
+<div class="w960">
+<div class="shadow customdiv">
+<h1 class="header">Creating a new custom division</h1>
+<div class="rowsep"></div>
+<div class="desc">Custom divisions allow you to create your own listings based on regions, or even for your friends all with sc2ranks data. You don't have to deal with updating data, skinning or providing any sort of search. Your email will not be given out, it is only used if you lose your admin password.</div>
+<div class="darkbg row">
+<label>Name (30 characters max)</label>
+<input id="division_name" name="division[name]" type="text" class="">
+</div>
+<div class="lightbg row">
+<label>Message</label>
+<input id="division_message" name="division[message]" type="text">
+</div>
+<div class="darkbg row">
+<label>Email</label>
+<input id="division_email" name="division[email]" type="text">
+</div>
+<div class="lightbg row">
+<label>Password</label>
+<input id="division_password" name="division[password]" type="password">
+</div>
+<div class="darkbg row">
+<label>Confirm password</label>
+<input id="division_confirm_password" name="division[confirm_password]" type="password">
+</div>
+<div class="lightbg row">
+<label>Public division</label>
+<input id="division_is_public" name="division[is_public]" type="checkbox" value="1">
+</div>
+<div class="darkbg row">
+<label>Show regions</label>
+<input checked="checked" id="division_show_regions" name="division[show_regions]" type="checkbox" value="1">
+</div>
+<div class="lightbg row">
+<label>Allow everyone to add characters</label>
+<input id="division_allow_add" name="division[allow_add]" type="checkbox" value="1">
+</div>
+<div class="darkbg row">
+<label>Allow everyone to remove characters</label>
+<input id="division_allow_remove" name="division[allow_remove]" type="checkbox" value="0">
+</div>
+<div class="lightbg row">
+<input name="commit" type="submit" value="Submit">
+</div>
+</div>
+</div>
+                    </form>-->
+                    <form action="http://sc2ranks.com/custom_char_update" method="post">
+<input id="id" name="id" type="hidden" value="10455">
+<div class="w960">
+<div class="shadow customdiv">
+<h1 class="header">Managing division characters</h1>
+<div class="rowsep"></div>
+<div class="desc green">Can add characters without a password, but not remove.</div>
+<div class="rowsep">
+<div class="desc green">Authorized, no password has to be entered.</div>
+</div>
+<div class="darkbg nopad row">
+<input checked="checked" id="division_char_type_add" name="division[char_type]" type="radio" value="add">
+Add character
+<input id="division_char_type_remove" name="division[char_type]" type="radio" value="remove">
+Remove character
+</div>
+<div class="rowsep"></div>
+<div class="desc number">Enter either battle.net or sc2rank urls to add or remove characters. One character per line. Characters can be from any region, custom divisions don't enforce a single region.</div>
+<div class="lightbg row">
+<textarea id="division_urls" name="division[urls]"></textarea>
+</div>
+<div class="darkbg row">
+<input name="commit" type="submit" value="Submit">
+</div>
+</div>
+</div>
+      </form>
+</body>
+</html>
