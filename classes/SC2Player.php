@@ -5,6 +5,7 @@ require_once('../helpers/helper-fns.php');
 require_once('../helpers/simple_html_dom.php');
 require_once('../helpers/RestUtils.php');
 require_once('../helpers/URLConnect.php');
+require_once('SC2Achievements.php');
 
 /**
  * Return all general info related to a starcraft 2 player.
@@ -135,7 +136,6 @@ class SC2Player {
 		
 		// Get division data now
 		$divisions = array();
-		
 		$divisionsNode = $playerHTML->find('.leagues');
 		foreach ( $divisionsNode as $oneNode ) {
 			
@@ -243,10 +243,10 @@ class SC2Player {
 						if ( $playerGeneral ) {
 							// Get player url
 							$playerURL = $playerGeneral->getAttribute('href');
-							$onePlayer['url'] = RANKSURL . $playerURL;
+							$onePlayer['ranksURL'] = RANKSURL . $playerURL;
 							
 							// Estimate the other player's bnet link
-							$onePlayer['bnetLink'] = SC2Utils::estimateBLink($onePlayer['url']);
+							$onePlayer['bnetURL'] = SC2Utils::estimateBLink($onePlayer['ranksURL']);
 						}else {
 							// This player is us, we estimate this player's fav race here. 1v1 has precedence over 2v2, 2v2 over 3v3 etc.
 							if ( !isset($jsonArray['race']) ) {
@@ -270,6 +270,8 @@ class SC2Player {
 		// Add user's divisions
 		$jsonArray['divisions'] = $divisions;
 		
+		
+    
 		// Finish sc2ranks profile for player
 		return $jsonArray;
 	}
@@ -296,7 +298,17 @@ class SC2Player {
 		$jsonArray['name'] = $playerHTML->find('#profile-header h2 a', 0)->plaintext;
 			
 		// Get estimated ranks url
-		$jsonArray['url'] = SC2Utils::estimateRanksLink($this->playerURL);
+		$jsonArray['ranksURL'] = SC2Utils::estimateRanksLink($this->playerURL);
+		
+		// Save bnetURL
+		$jsonArray['bnetURL'] = $this->playerURL;
+		
+		// Save history url
+		$jsonArray['historyURL'] = $this->playerURL . "matches";
+		
+		// Save achievements urls
+		$achievementsArrayString = SC2Achievements::getAllAchievements($jsonArray['bnetURL']);
+		$jsonArray['achievementsURL'] = json_decode($achievementsArrayString); 
 		
 		// Get region
 		$startpos = strpos($this->playerURL, 'http://');
@@ -321,8 +333,16 @@ class SC2Player {
 			$jsonArray['leagueWins'] = GeneralUtils::parseInt($leagueWins);
 				
 			// Get custom games
-			$customGameWins = $careerStats->find('ul li span', 0)->plaintext;
-			$jsonArray['customWins'] = GeneralUtils::parseInt($customGameWins);
+			$customGames = $careerStats->find('ul li span', 0)->plaintext;
+			$jsonArray['customGames'] = GeneralUtils::parseInt($customGames);
+			
+			// Get FFA games
+			$ffaGames = $careerStats->find('ul li span', 1)->plaintext;
+			$jsonArray['ffaGames'] = GeneralUtils::parseInt($ffaGames);
+			
+			// Get coop games
+			$coopGames = $careerStats->find('ul li span', 2)->plaintext;
+			$jsonArray['coopGames'] = GeneralUtils::parseInt($coopGames);
 			
 			// Get campaign mode
 			$campaignMode = $careerStats->getAttribute('class');

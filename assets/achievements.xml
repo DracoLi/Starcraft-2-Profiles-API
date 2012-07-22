@@ -5,35 +5,35 @@
 		<content>
 			<oneAchievement>
 				<name>Mara Sara Missions</name>
-				<url>achievements/category/3211278</url>
-			</oneAchievement>
-			<oneAchievement>
-				<name>Colonist Missions</name>
-				<url>achievements/category/3211279</url>
-			</oneAchievement>
-			<oneAchievement>
-				<name>Covert Missions</name>
 				<url>achievements/category/3211280</url>
 			</oneAchievement>
 			<oneAchievement>
-				<name>Rebellion Missions</name>
+				<name>Colonist Missions</name>
 				<url>achievements/category/3211281</url>
 			</oneAchievement>
 			<oneAchievement>
-				<name>Artifact Missions</name>
+				<name>Covert Missions</name>
 				<url>achievements/category/3211282</url>
 			</oneAchievement>
 			<oneAchievement>
-				<name>Prophecy Missions</name>
+				<name>Rebellion Missions</name>
 				<url>achievements/category/3211283</url>
 			</oneAchievement>
 			<oneAchievement>
-				<name>Final Missions</name>
+				<name>Artifact Missions</name>
 				<url>achievements/category/3211284</url>
 			</oneAchievement>
 			<oneAchievement>
-				<name>Story Mode</name>
+				<name>Prophecy Missions</name>
 				<url>achievements/category/3211285</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Final Missions</name>
+				<url>achievements/category/3211286</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Story Mode</name>
+				<url>achievements/category/3211287</url>
 			</oneAchievement>
 		</content>
 	</oneAchievement>
@@ -83,7 +83,7 @@
 			</oneAchievement>
 			<oneAchievement>
 				<name>Blizzard Mods</name>
-				<url>achievements/category/3211287</url>
+				<url>achievements/category/3211279</url>
 			</oneAchievement>
 		</content>
 	</oneAchievement>
@@ -148,6 +148,11 @@
 	</oneAchievement>
 	<oneAchievement>
 		<name>Feats of Strength</name>
-		<url>achievements/category/4325394</url>
+		<content>
+		  <oneAchievement>
+		    <name>Feats of Strength</name>
+		    <url>achievements/category/4325394</url>
+		  </oneAchievement>
+		</content>
 	</oneAchievement>
 </achievements>

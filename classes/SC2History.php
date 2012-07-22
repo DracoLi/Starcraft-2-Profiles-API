@@ -231,21 +231,27 @@ class SC2History {
 			
 			// Get map name
 			$mapName = $historyNode->find('td', 1)->plaintext;
-			$oneHistory['map'] = trim($mapName);
+			$oneHistory['map'] = html_entity_decode(trim($mapName), ENT_QUOTES);
 			
 			// Get map type - custom, 1v1, 2v2 , etc
 			$type = $historyNode->find('td', 2)->plaintext;
-			$isNum = preg_match('/[1-4]/', $type, $matches);
-			if ( $isNum > 0 ) {
-				// 1v1,2v2,3v3,4v4
-				$type = GeneralUtils::parseInt($matches[0]);		
-			}
+      // $isNum = preg_match('/[1-4]/', $type, $matches);
+      // if ( $isNum > 0 ) {
+      //  // 1v1,2v2,3v3,4v4
+      //  $type = GeneralUtils::parseInt($matches[0]);    
+      // }
 			$oneHistory['type'] = trim($type);
 			
-			// Get map result
+			// Get map outcome string
 			$resultNode = $historyNode->find('td', 3);
-			$result = $resultNode->find('span', 0)->plaintext;
-			$oneHistory['result'] = trim($result);
+			$resultString = $resultNode->find('span', 0)->plaintext;
+			$oneHistory['outcomeString'] = trim($resultString);
+			
+			// Get map outcome key
+			$outcomeClass = $resultNode->find('span', 0)->getAttribute('class');
+			$startpos = strpos($outcomeClass, "-");
+			$outcomeKey = substr($outcomeClass, $startpos + 1);
+			$oneHistory['outcomeKey'] =  trim($outcomeKey);
 			
 			// Get map points if exists
 			$pointsNode = $resultNode->find('span', 1);

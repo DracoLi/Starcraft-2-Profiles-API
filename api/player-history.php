@@ -13,16 +13,19 @@ require_once('../helpers/helper-fns.php');
 
 // Get basic parameters
 $options = array();
-$options['url'] = $_POST['url'];			// player profile url
-$options['content'] = $_POST['content'];	// Content of the page
+$options['url'] = $_REQUEST['url'];			// player profile url
+$options['content'] = $_REQUEST['content'];	// Content of the page
+$options['type'] = $_REQUEST['type'];
+
+$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/383803/1/BlackCitadel/', 
+                       'type' => 'json', 
+                       'content' => '');
+
+// Merge user param with default
+$options = GeneralUtils::getDefaults($defaultParams, $options);
 
 // If development enviroment and no content is provided, we fetch it instead
 if ( !isset($options['content']) || $options['content'] == '' ) {
-	
-	$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/383803/1/BlackCitadel/');
-	
-	// Merge user param with default
-	$options = GeneralUtils::getDefaults($defaultParams, $options);
 	
 	// If user pass bnet url, we send the correct matches url if in production.
 	if ( SC2Utils::isbnetURL($options['url']) ) {
@@ -49,7 +52,7 @@ if ( !isset($options['content']) || $options['content'] == '' ) {
 			}
 			$options['content'] = $urlconnect->getContent();
 		}else {
-			// We do not accept only a ranks profile url in development
+			// We do not accept only a ranks profile url in production
 			RestUtils::sendResponse(406);
 			exit;
 		}
@@ -57,11 +60,10 @@ if ( !isset($options['content']) || $options['content'] == '' ) {
 }
 
 $sc2history = new SC2History($options['content'], $options['url']);
-
-if ( ENVIROMENT == 'DEVELOPMENT' ) {
-	$sc2history->displayArray();
-}else {
-	RestUtils::sendResponse(200, $sc2search->getJsonData(), '', 'application/json');
+if ( $options['type'] == 'html' ) {
+ $sc2history->displayArray();
+}else if ( $options['type'] == 'json' ){
+ RestUtils::sendResponse(200, $sc2history->getJsonData(), '', 'application/json');
 }
 
 ?>

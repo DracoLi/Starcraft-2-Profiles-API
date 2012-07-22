@@ -11,32 +11,35 @@ require('../classes/SC2Rankings.php');
 $defaultParams = array('region' => 'na',
 					   'league' => 'grandmaster',
 					   'bracket' => 1,
-					   'type' => 'random',
+					   'raceType' => 'random',
 					   'race' => 'all',
 					   'start' => 0,
 					   'amount' => 100,
-					   'update' => true);
+					   'update' => true,
+					   'type' => 'json');
 
 // Get basic parameters
 $options = array();
 $options['region'] = $_GET['region'];	// global, na, sea, eu, krtw, cn
 $options['league'] = $_GET['league'];	// bronze, silver, gold, platinum, master, grandmaster
 $options['bracket'] = $_GET['bracket'];	// 1, 2, 3, 4
-$options['type'] = $_GET['type'];		// Applies when bracket > 1. Can be team or random
+$options['raceType'] = $_GET['raceType'];		// Applies when bracket > 1. Can be team or random
 $options['race'] = $_GET['race'];		// all, zerg, protess, terran, random
 
 $options['start'] = $_GET['start'];		// index to start
 $options['amount'] = $_GET['amount'];	// amount of rankings to grab
 $options['update'] = $_GET['update'];	// update our cache
 
+$options['type'] = $_GET['type'];	// update our cache
+
 // Merge user param with default
 $options = GeneralUtils::getDefaults($defaultParams, $options);
 
 $rankingsObject = new SC2Rankings($options);
 
-if ( ENVIROMENT == 'DEVELOPMENT' ) {
+if ( $options['type'] == 'html' ) {
 	$rankingsObject->displayArray();
-}else {
+}else if ( $options['type'] == 'json' ) {
 	RestUtils::sendResponse(200, $rankingsObject->getJsonData(), '', 'application/json');
 }
 

@@ -9,12 +9,15 @@ require_once('../classes/SC2Achievements.php');
 require_once('../helpers/RestUtils.php');
 
 // Constants
-$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/383803/1/BlackCitadel/achievements/category/4325378');
+$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/383803/1/BlackCitadel/achievements/category/4325378',
+'content' => '', 'type' => 'json');
 
 // Get basic parameters
 $options = array();
-$options['url'] = $_POST['url'];			// URL of the achievement page
-$options['content'] = $_POST['content'];	// Content of the achievement page
+$options['url'] = $_REQUEST['url'];			// URL of the achievement page
+$options['content'] = $_REQUEST['content'];	// Content of the achievement page
+$options['type'] = $_REQUEST['type'];
+$options = GeneralUtils::getDefaults($defaultParams, $options);
 
 // Handle cases when no content is provided - Users should always have the right divisions url (we cannot guess it).
 if ( is_null($options['content']) || strlen($options['content']) == 0 ) {
@@ -40,9 +43,6 @@ if ( is_null($options['content']) || strlen($options['content']) == 0 ) {
 			exit;
 		}
 		
-		$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/383803/1/BlackCitadel/achievements/category/3211279');
-		$options['url'] = is_null($options['url']) ? $defaultParams['url'] : $options['url'];
-		
 		// If in development, we fetch the contenct from the target url instead
 		$urlconnect = new URLConnect($options['url'], 100, FALSE);
 		if ( $urlconnect->getHTTPCode() != 200 ) {
@@ -55,10 +55,10 @@ if ( is_null($options['content']) || strlen($options['content']) == 0 ) {
 
 $sc2Achievements = new SC2Achievements($options['content'], $options['url']);
 
-if ( ENVIROMENT == 'DEVELOPMENT' ) {
-	$sc2Achievements->displayArray();
-}else {
-	RestUtils::sendResponse(200, $sc2Achievements->getJsonData(), '' , 'application/json');
+if ( $options['type'] == 'html' ) {
+ $sc2Achievements->displayArray();
+}else if ( $options['type'] == 'json' ){
+ RestUtils::sendResponse(200, $sc2Achievements->getJsonData(), '', 'application/json');
 }
 
 ?>

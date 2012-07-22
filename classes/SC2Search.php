@@ -84,20 +84,13 @@ class SC2Search {
 			$oneJson = array();
 			
 			// Add search result player data
-			$onePlayer = array();
-			{
-				// Get character name and url (ranks)
-				$tempChar = $oneResult->find('.character0 a', 0);
-				$charName = $tempChar->plaintext;
-				$partialLink = $tempChar->getAttribute('href');
-				$charLink = RANKSURL . $partialLink;
-				$onePlayer['name'] = $charName;
-				$onePlayer['url'] = $charLink;
-				
-				// Estimate player's bnet link
-				$onePlayer['bnetURL'] = SC2Utils::estimateBLink($onePlayer['url']);	
-			}
-			$oneJson['players'] = $onePlayer;
+			$tempChar = $oneResult->find('.character0 a', 0);
+			$charName = $tempChar->plaintext;
+			$partialLink = $tempChar->getAttribute('href');
+			$charLink = RANKSURL . $partialLink;
+			$oneJson['name'] = $charName;
+			$oneJson['ranksURL'] = $charLink;
+			$oneJson['bnetURL'] = SC2Utils::estimateBLink($charLink);	
 			
 			// Get user's best division data
 			$oneDivision = array();
@@ -155,13 +148,13 @@ class SC2Search {
 					
 				// Get division url
 				$divisionURL = RANKSURL . $oneResult->find('.division a', 0)->getAttribute('href');
-				$oneDivision['url'] = $divisionURL;
+				$oneDivision['ranksURL'] = $divisionURL;
 			}
 			// Add division to one search
-			$oneJson['division'] = $oneDivision;
+			$oneJson['divisions'] = $oneDivision;
 			
 			// Add one result to search content
-			$jsonArray['content'][] = $oneJson;
+			$jsonArray['players'][] = $oneJson;
 				
 		}// End adding all our search results
 		

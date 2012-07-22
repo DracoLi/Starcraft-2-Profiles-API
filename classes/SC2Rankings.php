@@ -14,7 +14,7 @@ class SC2Rankings {
 	private $dataToPrint;
 	
 	const CACHEAMOUNT = 100;		// Total number of rankings we wil store. Thus users cannot request more than this.
-	const MAX_CACHE_TIME = 1800; 	// Every 30 min
+	const MAX_CACHE_TIME = 1800; 	// Every 30 min update rankings
 	
 	public function __construct($options) {
 		$this->options = $options;
@@ -298,7 +298,7 @@ class SC2Rankings {
 	{
 		global $displayRegionMapper;
 		$bracket = $this->options['bracket'];
-		$type = $this->options['type'];
+		$type = $this->options['raceType'];
 		$league = $this->options['league'];
 		
 		// Get contents for results - exit if source is invalid
@@ -504,7 +504,7 @@ class SC2Rankings {
 	{
 		$region = (isset($region) && !is_null($region)) ? $region : $this->options['region'];
 		return $region . '-' . $this->options['league'] . '-' 
-				. $this->options['bracket'] . $this->options['type'] . '-' . $this->options['race'];
+				. $this->options['bracket'] . $this->options['raceType'] . '-' . $this->options['race'];
 	}
 	
 	/** 
@@ -521,7 +521,7 @@ class SC2Rankings {
 		$league = strtolower($this->options['league']);
 		$race = strtolower($this->options['race']);
 		$bracket = GeneralUtils::parseInt($this->options['bracket']);
-		if ( $this->options['type'] == 'random' && $this->options['bracket'] > 1 ) {
+		if ( $this->options['raceType'] == 'random' && $this->options['bracket'] > 1 ) {
 			$type = 'R';
 		}
 		

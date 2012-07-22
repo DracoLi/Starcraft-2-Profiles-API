@@ -45,24 +45,25 @@ class SC2Achievements {
 	}
 	
 	/**
-	 * Return an array of achivements sections and url that can be used by user
+	 * Return an array of achievements sections and url that can be used by user
 	 * @param url The player's base url
 	 * @return json the player's achievements
 	 */
-	public static function getAllAchievements($url)
+	public static function getAllAchievements($base)
 	{
 		// Construct an array of achivement sections
-		$data = simplexml_load_file('achievements.xml');
-		$achievementsData = SC2Achievements::parseInnerAchievements($data->children());
+		$data = simplexml_load_file('../assets/achievements.xml');
+		$achievementsData = SC2Achievements::parseInnerAchievements($data->children(), $base);
 		return json_encode($achievementsData);
 	}
 	
 	/**
 	 * A helper recursive function that helps to parse our xml file with unknown number of drilldowns
 	 * @param $data The SimpleXMLElement containing an array of data
+	 * @param $base The player's base BNET url
 	 * @return array The parsed array for the inner content.
 	 */
-	protected static function parseInnerAchievements($data)
+	protected static function parseInnerAchievements($data, $base)
 	{
 		$allAchievements = array();
 		
@@ -70,10 +71,10 @@ class SC2Achievements {
 			$oneAchievement = array();
 			$oneAchievement['name'] = (string)$oneNode->name;
 			if ( isset($oneNode->url) ) {
-				$oneAchievement['url'] = (string)$oneNode->url;
+				$oneAchievement['url'] = $base . (string)$oneNode->url;
 			}
 			if ( isset($oneNode->content) ) {
-				$oneAchievement['content'] = SC2Achievements::parseInnerAchievements($oneNode->content->children());
+				$oneAchievement['content'] = SC2Achievements::parseInnerAchievements($oneNode->content->children(), $base);
 			}
 			$allAchievements[] = $oneAchievement;
 		}
@@ -98,7 +99,7 @@ class SC2Achievements {
 	}
 	
 	/**
-	 * Parse the content to get achivements data
+	 * Parse the content to get achievements data
 	 * @return Array the json array for the achievements data
 	 */
 	protected function getAchievementsData()
@@ -128,7 +129,7 @@ class SC2Achievements {
 			$achievementCategory['progress'] = $progress;	
 		}
 		
-		// Get all achivements in this category
+		// Get all achievements in this category
 		$achievements = array();
 		$achievementNodes = $pageHTML->find('#achievements-wrapper .achievement');
 		foreach ( $achievementNodes as $achievementNode ) {
@@ -205,13 +206,25 @@ class SC2Achievements {
 					$oneAchievement['series'] = $series;
 				}else if ( $criteriaNode = $seriesNode->find('.series-criteria', 0) ){
 					$criteria = $this->getCriteria($criteriaNode);
-					$oneAchievement['criteria'] = $criteria;
+					
+					// Check if all criteria are empty
+					$hasEmpty = FALSE;
+					foreach ( $criteria as $oneCriteria ) {
+					 if ( $oneCriteria['name'] == '' ) {
+					   $hasEmpty = TRUE;
+					   break;
+					 }
+					}
+					
+					if ( $hasEmpty == FALSE ) {
+					 $oneAchievement['criteria'] = $criteria;
+					}
 				}
 			}
 			// Add this achievement to our array
 			$achievements[] = $oneAchievement;
 		}
-		$achievementCategory['achivements'] = $achievements;
+		$achievementCategory['achievements'] = $achievements;
 		
 		return $achievementCategory;
 	}
@@ -257,7 +270,7 @@ class SC2Achievements {
 			$series[] = $oneSeries;	
 		}
 			
-		// Finishes series data for this achivements.
+		// Finishes series data for this achievements.
 		return $series;
 	}
 	
@@ -282,6 +295,15 @@ class SC2Achievements {
 			}
 			$oneCriteria['isEarned'] = $isEarned;
 			
+			// Get criteria type
+			$pos = strpos($fullwords, 'list-');
+			$wordLength = strlen($fullwords) - 5;
+			$endpos = strpos($fullwords, 'earned');
+			$endpos = $endpos === FALSE ? $wordLength : $wordLength - 7;
+			$type = substr($fullwords, $pos + 5, $endpos);
+			
+			$oneCriteria['type'] = trim($type);
+
 			$criteria[] = $oneCriteria;
 		}
 		

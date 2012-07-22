@@ -18,18 +18,19 @@ require_once('../classes/SC2Player.php');
 	
 // Get basic parameters
 $options = array();
-$options['url'] = $_GET['url'];			// player profile url
-$options['content'] = $_POST['content'];	// Content of the page
+$options['url'] = $_REQUEST['url'];			// player profile url
+$options['content'] = $_REQUEST['content'];	// Content of the page
+$options['type'] = $_REQUEST['type'];	// Type of result
 
+$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/2439371/1/coLMinigun/',
+                       'type' => 'json',
+                       'content' => '');
+// Merge user param with default
+$options = GeneralUtils::getDefaults($defaultParams, $options);                     
+                       
 // If development enviroment and no content is provided, we fetch it instead
-if ( ENVIROMENT == 'DEVELOPMENT' && (!isset($options['content']) || $options['content'] == '') ) {
-	
-	$defaultParams = array('url' => 'http://www.sc2ranks.com/us/2955143/GoSuGatored');
-	
-	// Merge user param with default
-	$options = GeneralUtils::getDefaults($defaultParams, $options);
-	
-	// Get contents for results
+if ( !isset($options['content']) || $options['content'] == '' ) {	
+	// Get contents for provided url
 	$urlconnect = new URLConnect($options['url'], 100, FALSE);
 	if ( $urlconnect->getHTTPCode() != 200 ) {
 		RestUtils::sendResponse($urlconnect->getHTTPCode());
@@ -39,10 +40,10 @@ if ( ENVIROMENT == 'DEVELOPMENT' && (!isset($options['content']) || $options['co
 }
 
 $sc2player = new SC2Player($options['content'], $options['url']);
-if ( ENVIROMENT == 'DEVELOPMENT' ) {
-	$sc2player->displayArray();	
-}else {
-	RestUtils::sendResponse(200, $sc2player->getJsonData(), '', 'application/json');
+if ( $options['type'] == 'html' ) {
+ $sc2player->displayArray();
+}else if ( $options['type'] == 'json' ){
+ RestUtils::sendResponse(200, $sc2player->getJsonData(), '', 'application/json');
 }
 
 ?>

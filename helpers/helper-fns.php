@@ -55,6 +55,8 @@ class SC2Utils {
 			$bnetLink = 'http://eu.battle.net/sc2/en/profile/' . $identifier . '/1/' . $name . '/';
 		}else if ( $region == 'ru' ) {
 			$bnetLink = 'http://eu.battle.net/sc2/en/profile/' . $identifier . '/2/' . $name . '/';
+		}else if ( $region == 'sea' ) {
+		  $bnetLink = 'http://sea.battle.net/sc2/en/profile/' . $identifier . '/1/' . $name . '/';
 		}else {
 			$bnetLink = 'http://us.battle.net/sc2/en/profile/' . $identifier . '/1/' . $name . '/';
 		}
@@ -188,6 +190,7 @@ class GeneralUtils {
 	 */ 
 	public static function getDefaults($defaultParams, $userParams)
 	{
+	  // Make a combined array based on defaults.
 		$combinedArray = array();
 		foreach ( $defaultParams as $key=>$value ) {
 			if ( !array_key_exists($key, $userParams) || is_null($userParams[$key]) ) {
@@ -198,6 +201,15 @@ class GeneralUtils {
 				$combinedArray[$key] = $userParams[$key];
 			}
 		}
+		
+		// Include any params in user that is not included in default
+		foreach ( $userParams as $key=>$value ) {
+			if ( !array_key_exists($key, $defaultParams) || is_null($defaultParams[$key]) ) {
+				// Default since user didnt supply
+				$combinedArray[$key] = $value;
+			}
+		}
+		
 		return $combinedArray;
 	}
 
