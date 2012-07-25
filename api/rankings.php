@@ -8,28 +8,23 @@
 require('../classes/SC2Rankings.php');
 
 // Default Params, this is used when cettain options not specified
-$defaultParams = array('region' => 'na',
+$defaultParams = array('region' => 'global',
 					   'league' => 'grandmaster',
-					   'bracket' => 1,
-					   'raceType' => 'random',
+					   'bracket' => '1',
 					   'race' => 'all',
-					   'start' => 0,
-					   'amount' => 100,
-					   'update' => true,
+					   'page' => 1,
+					   'update' => 'true',
 					   'type' => 'json');
 
 // Get basic parameters
 $options = array();
 $options['region'] = $_GET['region'];	// global, na, sea, eu, krtw, cn
 $options['league'] = $_GET['league'];	// bronze, silver, gold, platinum, master, grandmaster
-$options['bracket'] = $_GET['bracket'];	// 1, 2, 3, 4
-$options['raceType'] = $_GET['raceType'];		// Applies when bracket > 1. Can be team or random
+$options['bracket'] = $_GET['bracket'];	// 1, 2t, 2r, 3t, 3r, 4t, 4r
 $options['race'] = $_GET['race'];		// all, zerg, protess, terran, random
 
-$options['start'] = $_GET['start'];		// index to start
-$options['amount'] = $_GET['amount'];	// amount of rankings to grab
 $options['update'] = $_GET['update'];	// update our cache
-
+$options['page'] = $_GET['page'];	// update our cache
 $options['type'] = $_GET['type'];	// update our cache
 
 // Merge user param with default
@@ -42,6 +37,5 @@ if ( $options['type'] == 'html' ) {
 }else if ( $options['type'] == 'json' ) {
 	RestUtils::sendResponse(200, $rankingsObject->getJsonData(), '', 'application/json');
 }
-
 
 ?>

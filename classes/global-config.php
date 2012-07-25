@@ -4,23 +4,24 @@ define('ENVIROMENT', 'DEVELOPMENT');
 define('RANKSURL', 'http://www.sc2ranks.com');
 
 $ranksRegionMapper = array('global' => 'all',
-						   'na' => 'am',
-						   'krtw' => 'fea');
-						   
+						               'na' => 'am',
+						               'krtw' => 'fea');
+
+// Map how BNET or Ranks displays region to what we want to display for our results
 $displayRegionMapper = array('krtw' => 'KR&TW',
-					  	     'AM' => 'NA',
-						     'KR/TW' => 'KR&TW',
-							 'cn' => 'CN',
-							 'www' => 'CN',
-							 'us' => 'NA',
-							 'ca' => 'NA',
-							 'la' => 'NA',
-							 'na' => 'NA',
-							 'ru' => 'EU',
-							 'eu' => 'EU',
-							 'sea' => 'SEA',
-							 'kr' => 'KR&TW',
-							 'tw' => 'KR&TW');
+					  	        'AM' => 'AM',
+						          'KR/TW' => 'KR&TW',
+							        'cn' => 'CN',
+							        'www' => 'CN',
+							        'us' => 'AM',
+							        'ca' => 'AM',
+							        'la' => 'AM',
+							        'na' => 'AM',
+							        'ru' => 'EU',
+							        'eu' => 'EU',
+							        'sea' => 'SEA',
+							        'kr' => 'KR&TW',
+							        'tw' => 'KR&TW');
 						
 // Set the error reporting for all pages
 if ( ENVIROMENT == 'DEVELOPMENT' ) {

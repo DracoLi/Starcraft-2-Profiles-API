@@ -13,8 +13,11 @@ class SC2Rankings {
 	
 	private $dataToPrint;
 	
-	const CACHEAMOUNT = 100;		// Total number of rankings we wil store. Thus users cannot request more than this.
+	const CACHEAMOUNT = 100;		  // Total number of rankings we wil store. Thus users cannot request more than this.
 	const MAX_CACHE_TIME = 1800; 	// Every 30 min update rankings
+	const OUR_RANKINGS_PER_PAGE = 30;
+	const SC2RANKS_RANKS_PER_PAGE = 100;
+	
 	
 	public function __construct($options) {
 		$this->options = $options;
@@ -22,8 +25,10 @@ class SC2Rankings {
 		// Check if we have the requested data in cache
 		$requestCache = $this->getCachePath();
 		
-		// Only use cache when it exists, we specify to use cache, and when cached time is less than our max cache time
-		if ( file_exists($requestCache) && $this->options['update'] == 0 &&
+		// Only use cache if it exists, 
+		// and we specify to use cache, 
+		// and when cached time is less than our max cache time
+		if ( file_exists($requestCache) && $this->options['update'] == 'false' &&
 			  (time() - filemtime($requestCache)) < SC2Rankings::MAX_CACHE_TIME) {
 			$this->jsonData = file_get_contents($requestCache);
 		}else {
@@ -31,9 +36,10 @@ class SC2Rankings {
 			$resultsArray = $this->getRankingsData();
 			
 			if ( $resultsArray == NULL && file_exists($requestCache) ) {
-				// We didnt find rankings, use cached
+				// If we didnt find rankings, use cached (prob due to error connection to bnet)
 				$this->jsonData = file_get_contents($requestCache);
 			}else if( $resultsArray != NULL ) {
+			  // Save our rankings data (sc2ranks or bnet GM)
 				$this->jsonData = json_encode($resultsArray);
 				file_put_contents($requestCache, $this->jsonData, LOCK_EX);	
 			}
@@ -42,23 +48,26 @@ class SC2Rankings {
 	
 	/**
 	 * Get the json data within the range specified in options
+	 * All requests should go through this
 	 * @return json Data within the range
 	 */	
-	public function getJsonData()
+	public function getJsonData($jsonData = NULL)
 	{
 		// Check if we have things to send
-		if ( $this->jsonData == NULL) {
+		if ( $this->jsonData == NULL && $jsonData == NULL) {
 			return NULL;
 		}
 		
+		$targetJsonData = ($jsonData == NULL) ? $this->jsonData : $jsonData;
+
 		// Get the array to need to send
-		$jsonArray = json_decode($this->jsonData);
-		
-		// Grab our json data within a range.
-		$newData = array();
+		$jsonArray = json_decode($targetJsonData);
+    
+		// Grab our json data within the user specified range
 		$newDataIndex = 0;
-		$endIndex = min(($this->options['start'] + $this->options['amount']), count($jsonArray));
-		for ( $i = $this->options['start']; $i < $endIndex; $i++ ) {
+		$startIndex = ($this->options['page'] - 1) * SC2Rankings::OUR_RANKINGS_PER_PAGE;
+		$endIndex = min( $startIndex + SC2Rankings::OUR_RANKINGS_PER_PAGE, count($jsonArray) );
+		for ( $i = $startIndex; $i < $endIndex; $i++ ) {
 			$newData[$newDataIndex] = $jsonArray[$i];
 			$newDataIndex++;
 		}
@@ -93,11 +102,12 @@ class SC2Rankings {
 		// Create our data holder
 		$rankingsArray = array();
 		
-		if ( $this->options['league'] == 'grandmaster' ) {
-			if ( $this->options['region'] == 'global' ) {
-				$rankingsArray = $this->getCombinedGMRankings();	
+		if ( $this->options['league'] == 'grandmaster' ) {		  
+		  $region = $this->options['region'];
+			if ( $region == 'global' ) {
+				$rankingsArray = $this->getCombinedGMRankings();
 			}else {
-				$rankingsArray = $this->getBnetGMRankings();	
+				$rankingsArray = $this->getBnetGMRankings($region);
 			}
 		}else {
 			$rankingsArray = $this->getRanksRankingsData();	
@@ -109,18 +119,21 @@ class SC2Rankings {
 		return $rankingsArray;
 	}
 	
-	protected function getBnetGMRankings()
+	protected function getBnetGMRankings($region = NULL)
 	{
 		global $displayRegionMapper;
 		
+		$region = ($region == NULL) ? $this->options['region'] : $region;
+		
 		// Map region to targeted GM link
 		$gmMapper = array('na' => 'http://us.battle.net/sc2/en/ladder/grandmaster',
-						  'eu' => 'http://eu.battle.net/sc2/en/ladder/grandmaster',
-						  'sea' => 'http://sea.battle.net/sc2/en/ladder/grandmaster',
-						  'krtw' => 'http://kr.battle.net/sc2/ko/ladder/grandmaster',
-						  'cn' => 'http://www.battlenet.com.cn/sc2/zh/ladder/grandmaster');
+		                  'am' => 'http://us.battle.net/sc2/en/ladder/grandmaster',
+						          'eu' => 'http://eu.battle.net/sc2/en/ladder/grandmaster',
+        						  'sea' => 'http://sea.battle.net/sc2/en/ladder/grandmaster',
+        						  'krtw' => 'http://kr.battle.net/sc2/ko/ladder/grandmaster',
+        						  'cn' => 'http://www.battlenet.com.cn/sc2/zh/ladder/grandmaster');
 
-		$targetURL = GeneralUtils::mapKeyToValue($gmMapper, $this->options['region']);
+		$targetURL = GeneralUtils::mapKeyToValue($gmMapper, $region);
 		$this->addThingsToPrint("<h2><a href=\"$targetURL\">$targetURL</a></h2><br />");
 		
 		// Get contents for results
@@ -141,7 +154,8 @@ class SC2Rankings {
 		$rankingsArray = array();
 		$rawRankings = $contents->find('table tr');
 		if ( count($rawRankings) <= 2 ) return NULL;
-		$gmRegion = GeneralUtils::mapKeyToValue($displayRegionMapper, $this->options['region']);
+		$gmRegion = GeneralUtils::mapKeyToValue($displayRegionMapper, $region);
+		$gmRegion = strtoupper($gmRegion);
 		$currentRow = 0;
 		
 		foreach ( $rawRankings as $oneRankNode ) {
@@ -172,13 +186,16 @@ class SC2Rankings {
 				$name = trim($playerNode->plaintext);
 				$onePlayer['name'] = $name;
 				
+				// Get player's region
+				$onePlayer['region'] = $gmRegion;
+				
 				// Get estimate ranks url
 				$bnetLink = $playerNode->getAttribute('href');
 				$bnetLink = GeneralUtils::getBaseURL($targetURL) . $bnetLink;
-				$onePlayer['url'] = SC2Utils::estimateRanksLink($bnetLink);
+				$onePlayer['ranksURL'] = SC2Utils::estimateRanksLink($bnetLink);
 				
 				// Get bnet url
-				$onePlayer['bnetLink'] = $bnetLink;
+				$onePlayer['bnetURL'] = $bnetLink;
 				
 				$playersArray[] = $onePlayer;
 			}
@@ -193,9 +210,6 @@ class SC2Rankings {
 				$oneDivision['joinedDate'] = SC2Utils::joinedDateToTimeStamp($joinedDate, $targetURL);
 				//$oneDivision['joinedDate'] = date('j/n/Y', $oneDivision['joinedDate']); // Testing
 				
-				// Get division region
-				$oneDivision['region'] = $gmRegion;
-			
 				// Get points
 				$points = $oneRankNode->find('td', 3 + $rowAdjustment)->plaintext;
 				$oneDivision['points'] = GeneralUtils::parseInt($points);
@@ -209,8 +223,8 @@ class SC2Rankings {
 				$oneDivision['losses'] = GeneralUtils::parseInt($losses);
 				
 				// Get win ratio
-				$diviser = $oneDivision['wins'] + $oneDivision['losses'];
-				$oneDivision['winRatio'] = ($diviser > 0) ? $oneDivision['wins'] / $diviser : 0;
+				$divisor = $oneDivision['wins'] + $oneDivision['losses'];
+				$oneDivision['winRatio'] = ($divisor > 0) ? $oneDivision['wins'] / $divisor : 0;
 				
 				// Get div league
 				$oneDivision['league'] = 'grandmaster';
@@ -238,28 +252,59 @@ class SC2Rankings {
 			$rankingsArray[] = $oneRank;
 		}
 		
-		// Bnet GM rankings does not need to be sorted - we take data from BNET for granted
-		
+		// NOTE: Bnet GM rankings does not need to be sorted - we take data from BNET for granted
 		return $rankingsArray;
 	}
 	
+	/**
+	 * This function gets GM rankings from BNET for a specific region and save it to disk
+	 */
+	protected function saveGMRankingsForRegion($region) {
+	  $filePath = $this->getCachePath($region);
+	  $rankingsArray = $this->getBnetGMRankings($region);
+	  file_put_contents($filePath, json_encode($rankingsArray), LOCK_EX);	
+	}
+	
+	/**
+	 * This function returns grandmasters rankings across regions
+	 *  Rankings data are taken from cache, this method does not retreive data from BNET
+	 */
 	protected function getCombinedGMRankings()
 	{
+	  set_time_limit(60*10);
 		$cn = $this->getCachePath('cn');
 		$krtw = $this->getCachePath('krtw');
-		$eu = $this->getCachePath('eu');
-		$na = $this->getCachePath('na');
-		$sea = $this->getCachePath('sea');
-
+	  $eu = $this->getCachePath('eu');
+	  $na = $this->getCachePath('am');
+	  $sea = $this->getCachePath('sea');
+    // This part checks if we have GM data for each region.
+   
+    if ( !file_exists($cn) ) {
+      $this->saveGMRankingsForRegion('cn');
+    }
+    if ( !file_exists($krtw) ) {
+      $this->saveGMRankingsForRegion('krtw');
+    }
+    if ( !file_exists($eu) ) {
+      $this->saveGMRankingsForRegion('eu');
+    }
+    if ( !file_exists($na) ) {
+      $this->saveGMRankingsForRegion('am');
+    }
+    if ( !file_exists($sea) ) {
+      $this->saveGMRankingsForRegion('sea');
+    }    
+    
+    // Gets data from file and decode it to objects
 		$cn = json_decode(file_get_contents($cn));
 		$krtw = json_decode(file_get_contents($krtw));
-		$eu = json_decode(file_get_contents($eu));
-		$na = json_decode(file_get_contents($na));
-		$sea = json_decode(file_get_contents($sea));
+    $eu = json_decode(file_get_contents($eu));
+    $na = json_decode(file_get_contents($na));
+    $sea = json_decode(file_get_contents($sea));
 		
 		$global = array_merge($cn, $krtw, $eu, $na, $sea);
-		
-		usort($global, array(__CLASS__, 'defaultSort'));
+    
+		usort($global, array(__CLASS__, 'defaultRankingsSort'));
 		$global = $this->addRankingsField($global);
 		
 		return $global;
@@ -267,12 +312,12 @@ class SC2Rankings {
 	
 	protected function getRanksRankingsData()
 	{
-		$pagesNeeded = ceil(SC2Rankings::CACHEAMOUNT/100);
-		
+		$rankingsArray = array();
+		$pagesNeeded = ceil(SC2Rankings::CACHEAMOUNT/SC2Rankings::SC2RANKS_RANKS_PER_PAGE);
 		for ( $i = 0; $i < $pagesNeeded; $i++ ) {
 			
 			// Get an array of raw rankings data
-			$targetURL = $this->getTargetURL($i + 1);
+			$targetURL = $this->getTargetRanksURL($i + 1);
 			
 			$this->addThingsToPrint("<h2><a href=\"$targetURL\">$targetURL</a></h2><br />");
 			
@@ -285,7 +330,7 @@ class SC2Rankings {
 		$rankingsArray = json_decode($rankingsArray);
 		
 		// Sort our sc2ranks rankings according to our own default sorting algorithm
-		usort($rankingsArray, array(__CLASS__, 'defaultSort'));
+		usort($rankingsArray, array(__CLASS__, 'defaultRankingsSort'));
 		
 		// Insert rankings data into our data. TODO: Improve this
 		$rankingsArray = $this->addRankingsField($rankingsArray);
@@ -297,8 +342,10 @@ class SC2Rankings {
 	protected function appendOneRanksPage($targetURL, $rankingsArray, $isFirst)
 	{
 		global $displayRegionMapper;
-		$bracket = $this->options['bracket'];
-		$type = $this->options['raceType'];
+		
+		// Parse bracket and bracket type
+		$rawBracket = $this->options['bracket'];
+		list($bracket, $type) = $this->getBracketAndType($rawBracket);
 		$league = $this->options['league'];
 		
 		// Get contents for results - exit if source is invalid
@@ -311,8 +358,8 @@ class SC2Rankings {
 		$rawRankings = str_get_html($contents)->find('.tblrow');
 		
 		// Reload region value - used when region is not global
-		$regionValue = strtoupper(GeneralUtils::mapKeyToValue($displayRegionMapper, $this->options['region']));
-		foreach ( $rawRankings as $oneRanking )
+		mapKeyToValue($displayRegionMapper, $this->options['region']));
+	
 		{
 			// Start an ranking JSON object
 			$oneRank = array();
@@ -333,13 +380,22 @@ class SC2Rankings {
 					$nameTag = $playerNode->find('a', 0);
 					$onePlayer['name'] = $nameTag->plaintext;
 					
+					// Get player region if user wanted rankings from all regions
+  			ion'] == 'global' )
+  			
+  					// Use the region supplied by sc2ranks and map it for display
+  					$regionValue = $oneRanking->find('.region', 0)->plaintext;
+  					$regionValue = strtoupper(GeneralUtils::mapKeyToValue($displayRegionMapper, $regionValue));
+  				}
+  				$onePlayer['region'] = $regionValue;
+  				
 					// Get URL
 					$partialLink = $nameTag->getAttribute('href');
 					$playerURL = RANKSURL . $partialLink;
-					$onePlayer['url'] = $playerURL;
+					$onePlayer['ranksURL'] = $playerURL;
 					
 					// Get estimated bnet url
-					$onePlayer['bnetURL'] = SC2Utils::estimateBLink($onePlayer['url']);
+					$onePlayer['bnetURL'] = SC2Utils::estimateBLink($onePlayer['ranksURL']);
 					
 					$playersArray[] = $onePlayer;
 				}	
@@ -349,15 +405,6 @@ class SC2Rankings {
 			// Get user's best division data
 			$oneDivision = array();
 			{
-				// Get division region
-				if ( $this->options['region'] == 'global' )
-				{
-					// Use the region supplied by source and map it for display
-					$regionValue = $oneRanking->find('.region', 0)->plaintext;
-					$regionValue = strtoupper(GeneralUtils::mapKeyToValue($displayRegionMapper, $regionValue));
-				}
-				$oneDivision['region'] = $regionValue;
-				
 				// Get points
 				$points = $oneRanking->find('.points', 0)->plaintext;
 				$oneDivision['points'] = GeneralUtils::parseInt($points);
@@ -368,7 +415,7 @@ class SC2Rankings {
 					$oneDivision['wins'] = GeneralUtils::parseInt($wins);
 				}
 				
-				// Get losses - all masters random or master team with bracker < 4 have losses
+				// Get losses - all masters random or master team with bracket < 4 have losses
 				if ( ($league == 'master' && $type == 'random') || 
 					 ($league == 'master' && $type == 'team' && $bracket < 4) ) {
 					$losses = $oneRanking->find('.losses', 0)->plaintext;
@@ -377,7 +424,7 @@ class SC2Rankings {
 					$oneDivision['winRatio'] = ($diviser > 0) ? $oneDivision['wins'] / $diviser : 0;	// Manually calculate win ratio
 				}
 				
-				// Get winRaio for master 4v4 random since it does have wins and losses
+				// Get winRaio for master 4v4 team since it does have wins and losses
 				if ( $league == 'master' && $bracket == 4 && $type == 'team' ) {
 					$oneDivision['winRatio'] = floatval($oneRanking->find('.ratio', 0)->plaintext) / 100;
 				}
@@ -401,9 +448,9 @@ class SC2Rankings {
 					
 					// Get division url
 					$divisionURL = RANKSURL . $oneRanking->find('.division a', 0)->getAttribute('href');
-					$oneDivision['url'] = $divisionURL;
-				}	
-			}			
+					$oneDivision['ranksURL'] = $divisionURL;
+				}
+			}
 			$oneRank['division'] = $oneDivision;
 			
 			// Add a new rank to our array
@@ -417,7 +464,7 @@ class SC2Rankings {
 	 * Default sort by points and if points are equal then sort by win ratio. 
 	 * If no win ratio then sort by # of wins. If wins are same then rank is then the same as well
 	 */
-	protected function defaultSort($a, $b)
+	protected function defaultRankingsSort($a, $b)
 	{		
 		$finalCompare = 0;
 		
@@ -469,14 +516,15 @@ class SC2Rankings {
 	{
 		$rank = 1;
 		for ( $i = 0; $i < count($rankingsArray); $i++ ) {
-			
-			if ( $i > 0 && $points == $rankingsArray[$i-1]->division->points && 
+			// Check if this rank is same as the previous one. 
+			if ( $i > 0 && 
+			   $rankingsArray[$i]->division->points == $rankingsArray[$i-1]->division->points && 
 				 $rankingsArray[$i]->division->winRatio == $rankingsArray[$i-1]->division->winRatio &&
 				 $rankingsArray[$i]->division->wins == $rankingsArray[$i-1]->division->wins ) {
 				$rankingsArray[$i]->rank = $rank - 1;
 			}else {
 				$rankingsArray[$i]->rank = $rank;
-				$rank += 1;
+				$rank++;
 			}
 		}
 		return $rankingsArray;
@@ -503,14 +551,18 @@ class SC2Rankings {
 	protected function getIdentifierForRequest($region = NULL)
 	{
 		$region = (isset($region) && !is_null($region)) ? $region : $this->options['region'];
-		return $region . '-' . $this->options['league'] . '-' 
-				. $this->options['bracket'] . $this->options['raceType'] . '-' . $this->options['race'];
+		
+		$identifier = $region . '-' . $this->options['league'];
+		if ( $this->options['league'] != 'grandmaster' ) {
+		  $identifier .= '-' . $this->options['race'] . '-' . $this->options['bracket'];
+		}
+		return $identifier;
 	}
-	
+
 	/** 
 	 * Gets the url for a page num
 	 */
-	protected function getTargetURL($pageNum)
+	protected function getTargetRanksURL($pageNum)
 	{
 		global $ranksRegionMapper;
 		
@@ -520,16 +572,43 @@ class SC2Rankings {
 		// Adjust the league, race
 		$league = strtolower($this->options['league']);
 		$race = strtolower($this->options['race']);
-		$bracket = GeneralUtils::parseInt($this->options['bracket']);
-		if ( $this->options['raceType'] == 'random' && $this->options['bracket'] > 1 ) {
+		list($bracket, $type) = $this->getBracketAndType($this->options['bracket']);
+		if ( $type == 'random' && $bracket > 1 ) {
 			$type = 'R';
+		}else {
+		  $type = '';
 		}
 		
 		// Final URL
 		$ranksURL = RANKSURL . '/ranks/';
 		$ranksURL .= $region . '/' . $league . '/' . $bracket .  $type . '/' . $race . '/points' . '/' . ($pageNum - 1)* 100;
-		
 		return $ranksURL ;
+	}
+	
+	/**
+	 * This function separates a bracket string into the bracket and type component.
+	 * Ex: 2r returns 2, and r. 
+	 */
+	protected function getBracketAndType($rawBracket)
+	{
+	  preg_match('/(\d)/', $rawBracket, $array);
+		$bracket = GeneralUtils::parseInt($array[1]);
+		preg_match('/(\d)(\w)/', $rawBracket, $array);
+		$type = $this->getBracketType($array[2]);
+		return array($bracket, $type);
+	}
+	
+	/**
+	 * Given a string 'r' or 't' return its corresponding bracket type
+	 */
+	protected function getBracketType($type)
+	{
+	  if ($type == 'r') {
+	    return 'random';
+	  }else if ($type == 't') {
+	    return 'team';
+	  }
+	  return 'random';
 	}
 	
 	/**
