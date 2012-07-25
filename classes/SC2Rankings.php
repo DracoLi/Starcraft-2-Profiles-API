@@ -13,11 +13,12 @@ class SC2Rankings {
 	
 	private $dataToPrint;
 	
+	
 	const CACHEAMOUNT = 100;		  // Total number of rankings we wil store. Thus users cannot request more than this.
 	const MAX_CACHE_TIME = 1800; 	// Every 30 min update rankings
 	const OUR_RANKINGS_PER_PAGE = 30;
 	const SC2RANKS_RANKS_PER_PAGE = 100;
-	
+
 	
 	public function __construct($options) {
 		$this->options = $options;
@@ -271,14 +272,18 @@ class SC2Rankings {
 	 */
 	protected function getCombinedGMRankings()
 	{
+		// This function can execute longer since we might need to retrieve data from many sources
 	  set_time_limit(60*10);
+
+	  // Get file path of all our GM data
 		$cn = $this->getCachePath('cn');
 		$krtw = $this->getCachePath('krtw');
 	  $eu = $this->getCachePath('eu');
 	  $na = $this->getCachePath('am');
 	  $sea = $this->getCachePath('sea');
+    
     // This part checks if we have GM data for each region.
-   
+    // If not we fetches it from BNET
     if ( !file_exists($cn) ) {
       $this->saveGMRankingsForRegion('cn');
     }
@@ -358,8 +363,9 @@ class SC2Rankings {
 		$rawRankings = str_get_html($contents)->find('.tblrow');
 		
 		// Reload region value - used when region is not global
-		mapKeyToValue($displayRegionMapper, $this->options['region']));
-	
+		// Reload region value - used when region is not global
+		$regionValue = strtoupper(GeneralUtils::mapKeyToValue($displayRegionMapper, $this->options['region']));
+		foreach ( $rawRankings as $oneRanking )
 		{
 			// Start an ranking JSON object
 			$oneRank = array();
@@ -380,22 +386,22 @@ class SC2Rankings {
 					$nameTag = $playerNode->find('a', 0);
 					$onePlayer['name'] = $nameTag->plaintext;
 					
-					// Get player region if user wanted rankings from all regions
-  			ion'] == 'global' )
-  			
-  					// Use the region supplied by sc2ranks and map it for display
-  					$regionValue = $oneRanking->find('.region', 0)->plaintext;
-  					$regionValue = strtoupper(GeneralUtils::mapKeyToValue($displayRegionMapper, $regionValue));
-  				}
-  				$onePlayer['region'] = $regionValue;
-  				
+					// Get player region
+					if ( $this->options['region'] == 'global' )
+					{
+						// Use the region supplied by source and map it for display
+						$regionValue = $oneRanking->find('.region', 0)->plaintext;
+						$regionValue = strtoupper(GeneralUtils::mapKeyToValue($displayRegionMapper, $regionValue));
+					}
+					$oneDivision['region'] = $regionValue;
+
 					// Get URL
 					$partialLink = $nameTag->getAttribute('href');
 					$playerURL = RANKSURL . $partialLink;
-					$onePlayer['ranksURL'] = $playerURL;
+					$onePlayer['url'] = $playerURL;
 					
 					// Get estimated bnet url
-					$onePlayer['bnetURL'] = SC2Utils::estimateBLink($onePlayer['ranksURL']);
+					$onePlayer['bnetURL'] = SC2Utils::estimateBLink($onePlayer['url']);
 					
 					$playersArray[] = $onePlayer;
 				}	
@@ -415,7 +421,7 @@ class SC2Rankings {
 					$oneDivision['wins'] = GeneralUtils::parseInt($wins);
 				}
 				
-				// Get losses - all masters random or master team with bracket < 4 have losses
+				// Get losses - all masters random or master team with bracker < 4 have losses
 				if ( ($league == 'master' && $type == 'random') || 
 					 ($league == 'master' && $type == 'team' && $bracket < 4) ) {
 					$losses = $oneRanking->find('.losses', 0)->plaintext;
@@ -424,7 +430,7 @@ class SC2Rankings {
 					$oneDivision['winRatio'] = ($diviser > 0) ? $oneDivision['wins'] / $diviser : 0;	// Manually calculate win ratio
 				}
 				
-				// Get winRaio for master 4v4 team since it does have wins and losses
+				// Get winRaio for master 4v4 random since it does have wins and losses
 				if ( $league == 'master' && $bracket == 4 && $type == 'team' ) {
 					$oneDivision['winRatio'] = floatval($oneRanking->find('.ratio', 0)->plaintext) / 100;
 				}
@@ -448,9 +454,9 @@ class SC2Rankings {
 					
 					// Get division url
 					$divisionURL = RANKSURL . $oneRanking->find('.division a', 0)->getAttribute('href');
-					$oneDivision['ranksURL'] = $divisionURL;
-				}
-			}
+					$oneDivision['url'] = $divisionURL;
+				}	
+			}			
 			$oneRank['division'] = $oneDivision;
 			
 			// Add a new rank to our array
