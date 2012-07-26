@@ -190,13 +190,22 @@ class SC2Rankings {
 				// Get player's region
 				$onePlayer['region'] = $gmRegion;
 				
-				// Get estimate ranks url
+				// Get encoded bnet url
 				$bnetLink = $playerNode->getAttribute('href');
 				$bnetLink = GeneralUtils::getBaseURL($targetURL) . $bnetLink;
-				$onePlayer['ranksURL'] = SC2Utils::estimateRanksLink($bnetLink);
+				$parsed = parse_url($bnetLink);
+				$pathComponents = explode('/', $parsed['path']);
+				foreach ( $pathComponents as $i => $comp ) {
+				  $pathComponents[$i] = urlencode($comp);
+				}
+				$path = implode('/', $pathComponents);
+				$bnetLink = $parsed['scheme'] . "://" . $parsed['host'] . $path;
 				
-				// Get bnet url
+				// Set encoded bnet url
 				$onePlayer['bnetURL'] = $bnetLink;
+				
+				// Get ranks url
+				$onePlayer['ranksURL'] = SC2Utils::estimateRanksLink($bnetLink);
 				
 				$playersArray[] = $onePlayer;
 			}
@@ -233,6 +242,9 @@ class SC2Rankings {
 				// Get div name
 				$oneDivision['name'] = $divisionName;
 				
+				// Get div region
+				$oneDivision['region'] = $gmRegion;
+
 				// Get div rank
 				$rank = $oneRankNode->find('td', 1 + $rowAdjustment)->getAttribute('data-raw');
 				$oneDivision['rank'] = GeneralUtils::parseInt($rank);
@@ -362,14 +374,21 @@ class SC2Rankings {
 		$contents = $urlconnect->getContent();
 		$rawRankings = str_get_html($contents)->find('.tblrow');
 		
-		// Reload region value - used when region is not global
-		// Reload region value - used when region is not global
+
+		// Get the provided region
 		$regionValue = strtoupper(GeneralUtils::mapKeyToValue($displayRegionMapper, $this->options['region']));
 		foreach ( $rawRankings as $oneRanking )
 		{
 			// Start an ranking JSON object
 			$oneRank = array();
 			
+			// Get the region for this rank
+			if ( $this->options['region'] == 'global' ) {
+				// Use the region supplied by source and map it for display
+				$regionValue = $oneRanking->find('.region', 0)->plaintext;
+				$regionValue = strtoupper(GeneralUtils::mapKeyToValue($displayRegionMapper, $regionValue));
+			}
+
 			// Get players for rank
 			$playersArray = array();
 			{
@@ -386,14 +405,8 @@ class SC2Rankings {
 					$nameTag = $playerNode->find('a', 0);
 					$onePlayer['name'] = $nameTag->plaintext;
 					
-					// Get player region
-					if ( $this->options['region'] == 'global' )
-					{
-						// Use the region supplied by source and map it for display
-						$regionValue = $oneRanking->find('.region', 0)->plaintext;
-						$regionValue = strtoupper(GeneralUtils::mapKeyToValue($displayRegionMapper, $regionValue));
-					}
-					$oneDivision['region'] = $regionValue;
+					// Get region
+					$onePlayer['region'] = $regionValue;
 
 					// Get URL
 					$partialLink = $nameTag->getAttribute('href');
@@ -438,6 +451,10 @@ class SC2Rankings {
 				// Save division league - since we cannot have all league, using supplied param is sufficient
 				$oneDivision['league'] = $league;
 				
+				// Get division region
+				$oneDivision['region'] = $regionValue;
+
+				// Get division name rank, and url
 				if ( ($bracket <= 2 && $this->options['region'] != 'global') || $type == 'random' ) {
 		
 					// Get division name

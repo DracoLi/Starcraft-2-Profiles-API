@@ -77,10 +77,10 @@ class SC2Utils {
 		$name = substr($url, $startpos, ($endpos - $startpos));
 		
 		// Extract region from link
-		$region = FALSE;
-		$region = ( $region === FALSE && strpos($url, 'www.') !== FALSE) ? 'cn' : FALSE;
-		$region = ( $region === FALSE && strpos($url, 'tw') !== FALSE) ? 'tw' : FALSE;
-		$region = ( $region === FALSE && strpos($url, 'sea') !== FALSE) ? 'sea' : FALSE;
+		$region = ( strpos($url, '.cn') !== FALSE ) ? 'cn' : FALSE;
+		$region = ( $region === FALSE && strpos($url, 'tw') !== FALSE ) ? 'tw' : $region;
+		$region = ( $region === FALSE && strpos($url, 'sea') !== FALSE ) ? 'sea' : $region;
+		
 		if ( $region === FALSE && strpos($url, 'kr') !== FALSE ) {
 			$startpos = strpos($url, $identifier) + strlen($identifier) + 1;
 			$endpos = strpos($url, '/', $startpos);

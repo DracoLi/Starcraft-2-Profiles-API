@@ -1,0 +1,8 @@
+# OS X noise
+.DS_Store
+
+# TextMate noise
+*.tm_build_errors
+
+# Ignore our cache
+cache/
