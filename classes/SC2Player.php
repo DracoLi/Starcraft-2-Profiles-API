@@ -287,15 +287,22 @@ class SC2Player {
 		
 		// Get name
 		$jsonArray['name'] = $playerHTML->find('#profile-header h2 a', 0)->plaintext;
-			
-		// Get estimated ranks url
-		$jsonArray['ranksURL'] = SC2Utils::estimateRanksLink($this->playerURL);
 		
 		// Save bnetURL
-		$jsonArray['bnetURL'] = $this->playerURL;
+		
+		// This work around to get the current BNET url is here else we get messed-up
+		// results on our client because somehow the chinese characters are encoded twice.
+		$bnetURL = $playerHTML->find('#profile-menu li a', 0)->getAttribute('href');
+		$bnetURL = GeneralUtils::getBaseURL($this->playerURL) . $bnetURL;
+		$bnetURL = GeneralUtils::encodeURL($bnetURL);
+		
+		$jsonArray['bnetURL'] = $bnetURL;
+			
+		// Get estimated ranks url
+		$jsonArray['ranksURL'] = SC2Utils::estimateRanksLink($bnetURL);
 		
 		// Save history url
-		$jsonArray['historyURL'] = $this->playerURL . "matches";
+		$jsonArray['historyURL'] = $bnetURL . "matches";
 		
 		// Save achievements urls
 		$achievementsArrayString = SC2Achievements::getAllAchievements($jsonArray['bnetURL']);

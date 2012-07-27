@@ -332,10 +332,12 @@ class SC2Division {
 				// Get char bnet link
 				$bnetURL = $charNode->find('a', 0)->getAttribute('href');
 				$bnetURL = $userBaseURL . $bnetURL;
+				$bnetURL = GeneralUtils::encodeURL($bnetURL);
+				
 				$onePlayer['bnetURL'] = $bnetURL;
 				
 				// Estimate char ranks link
-				$onePlayer['url'] = SC2Utils::estimateRanksLink($bnetURL);
+				$onePlayer['ranksURL'] = SC2Utils::estimateRanksLink($bnetURL);
 				
 				$players[] = $onePlayer;
 			}

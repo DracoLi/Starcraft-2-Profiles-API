@@ -65,17 +65,14 @@ class SC2Search {
 		$domHTML = str_get_html($this->content);
 		$rawResults = $domHTML->find('.tblrow');
 		
-		// If we got no result, we skip parsing and send nothing
-		if ( count($rawResults) <= 0 ) {
-			RestUtils::sendResponse(200);
-		}
-	
 		// Initilize our results array
 		$jsonArray = array();
 			
 		// Get total pages this request
 		$totalPages = GeneralUtils::parseInt($domHTML->find('.paginate-top .page', 0)->plaintext);
+		$totalPages = $totalPages === FALSE ? 1 : $totalPages;
 		$jsonArray['pages'] = $totalPages;
+		$jsonArray['players'] = array();
 		
 		foreach ( $rawResults as $oneResult ) {
 			
@@ -141,10 +138,10 @@ class SC2Search {
 				$oneDivision['ranksURL'] = $divisionURL;
 			}
 			// Add division to one search
-			$oneJson['divisions'] = $oneDivision;
+			$onePlayer['divisions'] = $oneDivision;
 			
 			// Add one result to search content
-			$jsonArray['players'][] = $oneJson;
+			$jsonArray['players'][] = $onePlayer;
 				
 		}// End adding all our search results
 		

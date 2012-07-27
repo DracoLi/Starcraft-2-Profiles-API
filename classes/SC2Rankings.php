@@ -187,14 +187,8 @@ class SC2Rankings {
 				// Get encoded bnet url
 				$bnetLink = $playerNode->getAttribute('href');
 				$bnetLink = GeneralUtils::getBaseURL($targetURL) . $bnetLink;
-				$parsed = parse_url($bnetLink);
-				$pathComponents = explode('/', $parsed['path']);
-				foreach ( $pathComponents as $i => $comp ) {
-				  $pathComponents[$i] = urlencode($comp);
-				}
-				$path = implode('/', $pathComponents);
-				$bnetLink = $parsed['scheme'] . "://" . $parsed['host'] . $path;
-				
+        $bnetLink = GeneralUtils::encodeURL($bnetLink);
+        
 				// Set encoded bnet url
 				$onePlayer['bnetURL'] = $bnetLink;
 				

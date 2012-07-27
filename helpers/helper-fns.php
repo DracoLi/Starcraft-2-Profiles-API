@@ -278,5 +278,16 @@ class GeneralUtils {
 		$baseURL = substr($url, 0, $endPos);
 		return $baseURL;
 	}
+	
+	public static function encodeURL($url)
+	{
+	  $parsed = parse_url($url);
+		$pathComponents = explode('/', $parsed['path']);
+		foreach ( $pathComponents as $i => $comp ) {
+		  $pathComponents[$i] = urlencode($comp);
+		}
+		$path = implode('/', $pathComponents);
+		return $parsed['scheme'] . "://" . $parsed['host'] . $path;
+	}
 }
 ?>
