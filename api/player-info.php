@@ -23,8 +23,8 @@ $options['content'] = $_REQUEST['content'];	// Content of the page
 $options['type'] = $_REQUEST['type'];	// Type of result
 
 $defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/2439371/1/coLMinigun/',
-                       'type' => 'json',
-                       'content' => '');
+                       'type' => 'json');
+                       
 // Merge user param with default
 $options = GeneralUtils::getDefaults($defaultParams, $options);                     
                        
