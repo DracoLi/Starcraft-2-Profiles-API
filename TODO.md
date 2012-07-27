@@ -8,5 +8,3 @@
 - <s>Guess KR or TW in KRTW region from bnet url.</s>
 
 - <s>None of the derived sc2rank links are working</s>
-
-- <s>Add it to server</s>
