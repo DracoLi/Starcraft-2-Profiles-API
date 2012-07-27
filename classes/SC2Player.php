@@ -70,8 +70,6 @@ class SC2Player {
 	 */
 	private function getRanksPlayerInfo()
 	{
-		global $displayRegionMapper;
-		
 		$jsonArray = array();
 		$playerHTML = str_get_html($this->content)->find('.charprofile', 0);
 		
@@ -119,12 +117,7 @@ class SC2Player {
 		$jsonArray['bnetURL'] = $nameNode->find('a', 0)->getAttribute('href');
 		
 		// Get region
-		$fullText = $nameNode->plaintext;
-		$startpos = strpos($fullText, '(') + 1;
-		$endpos = strrpos($fullText, ')');
-		$region = substr($fullText, $startpos, ($endpos - $startpos));
-		$region = GeneralUtils::mapKeyToValue($displayRegionMapper, $region);
-		$jsonArray['region'] = strtoupper($region);
+		$jsonArray['region'] = SC2Utils::playerRegionFromBnetURL($jsonArray['bnetURL']);
 		
 		// Get historyURL
 		$historyURL = RANKSURL . $playerHTML->find('.profile .maps a', 0)->getAttribute('href');
@@ -282,8 +275,6 @@ class SC2Player {
 	 */
 	private function getBNETPlayerInfo()
 	{
-		global $displayRegionMapper;
-		
 		$userBaseURL = GeneralUtils::getBaseURL($this->playerURL);
 		
 		// Get data
@@ -311,14 +302,7 @@ class SC2Player {
 		$jsonArray['achievementsURL'] = json_decode($achievementsArrayString); 
 		
 		// Get region
-		$startpos = strpos($this->playerURL, 'http://');
-		if ( $startpos !== false ) {
-			$startpos += 7;
-			$endpos = strpos($this->playerURL, '.', $startpos);
-			$region = substr($this->playerURL, $startpos, ($endpos - $startpos));
-			$region = GeneralUtils::mapKeyToValue($displayRegionMapper, $region);
-			$jsonArray['region'] = $region;
-		}
+		$jsonArray['region'] = SC2Utils::playerRegionFromBnetURL($jsonArray['bnetURL']);
 		
 		// Get achivement points
 		$achivementPoints = $playerHTML->find('#profile-header h3', 0)->plaintext;

@@ -61,8 +61,6 @@ class SC2Search {
 	
 	protected function getRanksSearchResults()
 	{
-		global $displayRegionMapper;
-		
 		// Get raw data
 		$domHTML = str_get_html($this->content);
 		$rawResults = $domHTML->find('.tblrow');
@@ -81,31 +79,23 @@ class SC2Search {
 		
 		foreach ( $rawResults as $oneResult ) {
 			
-			$oneJson = array();
+			$onePlayer = array();
 			
 			// Add search result player data
 			$tempChar = $oneResult->find('.character0 a', 0);
 			$charName = $tempChar->plaintext;
 			$partialLink = $tempChar->getAttribute('href');
 			$charLink = RANKSURL . $partialLink;
-			$oneJson['name'] = $charName;
-			$oneJson['ranksURL'] = $charLink;
-			$oneJson['bnetURL'] = SC2Utils::estimateBLink($charLink);	
+			$onePlayer['name'] = $charName;
+			$onePlayer['ranksURL'] = $charLink;
+			$onePlayer['bnetURL'] = SC2Utils::estimateBLink($onePlayer['ranksURL']);	
+			$onePlayer['region'] = SC2Utils::playerRegionFromBnetURL($onePlayer['bnetURL']);
 			
 			// Get user's best division data
 			$oneDivision = array();
 			{
-				// Extract region from link
-				$startpos = strpos($partialLink, '/') + 1;
-				if ( $startpos !== false ) {
-					$endpos	= strpos($partialLink, '/', $startpos + 1);
-					$region = substr($partialLink, $startpos , ($endpos - $startpos));
-					
-					// Map region into our default region
-					$displayRegion = GeneralUtils::mapKeyToValue($displayRegionMapper, $region);
-					$displayRegion= strtoupper($displayRegion);
-					$oneDivision['region'] = $displayRegion;
-				}
+				// Get region for player
+				$oneDivision['region'] = $onePlayer['region'];
 				
 				// Get division points
 				$tempNode = $oneResult->find('.points', 0);

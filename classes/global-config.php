@@ -20,8 +20,8 @@ $displayRegionMapper = array('krtw' => 'KR&TW',
 							        'ru' => 'EU',
 							        'eu' => 'EU',
 							        'sea' => 'SEA',
-							        'kr' => 'KR&TW',
-							        'tw' => 'KR&TW');
+							        'kr' => 'KR',
+							        'tw' => 'TW');
 						
 // Set the error reporting for all pages
 if ( ENVIROMENT == 'DEVELOPMENT' ) {

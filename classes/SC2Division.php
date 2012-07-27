@@ -214,12 +214,7 @@ class SC2Division {
 		$divisionData['league'] = strtolower($league);
 		
 		// Get division region
-		global $displayRegionMapper;
-		$startpos = strpos($this->contentURL, 'http://') + 7;
-		$endpos = strpos($this->contentURL, '.', $startpos);
-		$region = substr($this->contentURL, $startpos, ($endpos - $startpos));
-		$region = GeneralUtils::mapKeyToValue($displayRegionMapper, $region);
-		$divisionData['region'] = strtoupper($region);
+		$divisionData['region'] = SC2Utils::playerRegionFromBnetURL($this->contentURL);
 		
 		// Get division bracket
 		$divider = $divisionHTML->find('.data-label span', 0)->plaintext;
@@ -446,10 +441,10 @@ class SC2Division {
 				// Get char ranks link
 				$url = $charNode->find('a', 0)->getAttribute('href');
 				$url = RANKSURL . $url;
-				$onePlayer['url'] = $url;
+				$onePlayer['ranksURL'] = $url;
 				
 				// Get char estimate bnet link
-				$onePlayer['bnetURL'] = SC2Utils::estimateBLink($onePlayer['url']);
+				$onePlayer['bnetURL'] = SC2Utils::estimateBLink($onePlayer['ranksURL']);
 				
 				$players[] = $onePlayer;
 			}

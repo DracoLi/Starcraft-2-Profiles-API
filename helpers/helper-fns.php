@@ -1,11 +1,11 @@
 <?php
+require_once('../classes/global-config.php');
 
 class SC2Utils {
 	
 	public static function joinedDateToTimeStamp($joinedDate, $url, $testing = ENVIROMENT)
 	{
 		// Get player region
-		global $displayRegionMapper;
 		$startpos = strpos($url, 'http://') + 7;
 		$endpos = strpos($url, '.', $startpos);
 		$region = substr($url, $startpos, ($endpos - $startpos));
@@ -16,9 +16,12 @@ class SC2Utils {
 		$joinedDate = trim(substr($joinedDate, $startpos));
 		preg_match('/(\d{1,2})\/(\d{1,2})\/(\d{4})/', $joinedDate, $matches);
 		if ( $region == 'eu' ) {
+		  // Because Europe is wierd
 			$joinedDate = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
-		}else if ( $region == 'us' || $region == 'www' || $region == 'sea' || $region == 'tw' ) {
+		}else if ( $region == 'us' || $region == 'sea' || $region == 'tw' ) {
 			$joinedDate = $matches[3] . '-' . $matches[1] . '-' . $matches[2];
+		}else {
+		  // China and taiwan already uses the standard
 		}
 		$timeStamp = (int)strtotime($joinedDate);
 		return ($testing == 'DEVELOPMENT') ? date('Y-m-d', $timeStamp) : $timeStamp;
@@ -175,6 +178,21 @@ class SC2Utils {
 		
 		return $imageData;
 	}
+	
+	public static function playerRegionFromBnetURL($bnetURL) {
+	  // Get region
+		global $displayRegionMapper;
+		
+		$startpos = strpos($bnetURL, 'http://');
+		if ( $startpos !== false ) {
+			$startpos += 7;
+			$endpos = strpos($bnetURL, '.', $startpos);
+			$region = substr($bnetURL, $startpos, ($endpos - $startpos));
+			$region = GeneralUtils::mapKeyToValue($displayRegionMapper, $region);
+			return $region;
+		}
+		return "AM";
+  }
 }
 
 /**
