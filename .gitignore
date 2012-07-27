@@ -5,4 +5,4 @@
 *.tm_build_errors
 
 # Ignore our cache
-cache/
+cache/*

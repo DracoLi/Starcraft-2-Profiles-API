@@ -1,6 +1,6 @@
 <?php
 
-define('ENVIROMENT', 'DEVELOPMENT');			  
+define('ENVIROMENT', 'DEVELOPMENT');		// DEVELOPMENT, PRODUCTION
 define('RANKSURL', 'http://www.sc2ranks.com');
 
 $ranksRegionMapper = array('global' => 'all',

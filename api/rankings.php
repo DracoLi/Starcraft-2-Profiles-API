@@ -15,6 +15,7 @@ $defaultParams = array('region' => 'global',
 					   'page' => 1,
 					   'update' => 'true',
 					   'type' => 'json');
+$defaultParams['update'] = ENVIROMENT == "DEVELOPMENT" ? "true" : 'false';
 
 // Get basic parameters
 $options = array();

@@ -29,13 +29,12 @@ class SC2Rankings {
 		// Only use cache if it exists, 
 		// and we specify to use cache, 
 		// and when cached time is less than our max cache time
-		if ( file_exists($requestCache) && $this->options['update'] == 'false' &&
-			  (time() - filemtime($requestCache)) < SC2Rankings::MAX_CACHE_TIME) {
+		if ( file_exists($requestCache) && $this->options['update'] == 'false') {// &&
+			  //(time() - filemtime($requestCache)) < SC2Rankings::MAX_CACHE_TIME) {
 			$this->jsonData = file_get_contents($requestCache);
 		}else {
 			// Get new json data from sc2ranks directly - since we caching results, its okay!
 			$resultsArray = $this->getRankingsData();
-			
 			if ( $resultsArray == NULL && file_exists($requestCache) ) {
 				// If we didnt find rankings, use cached (prob due to error connection to bnet)
 				$this->jsonData = file_get_contents($requestCache);
