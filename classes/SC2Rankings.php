@@ -541,15 +541,8 @@ class SC2Rankings {
 	
 	protected function getCachePath($region = NULL)
 	{
-		$currentpath = $_SERVER['DOCUMENT_ROOT'] .  $_SERVER['PHP_SELF'];
-		$currentpath = dirname($currentpath);
-		$endpos = strrpos($currentpath, '/');
-		if ( $endpos === FALSE ) {
-			$endpos = strrpos($currentpath, '\\');
-		}
-		$basePath = substr($currentpath, 0, $endpos);
-		$fullPath = $basePath . DIRECTORY_SEPARATOR . 
-						'cache' . DIRECTORY_SEPARATOR . $this->getIdentifierForRequest($region) . '.json';
+		$fullPath = GeneralUtils::serverBasePath() . DIRECTORY_SEPARATOR . 
+			'cache' . DIRECTORY_SEPARATOR . $this->getIdentifierForRequest($region) . '.json';
 		return $fullPath;
 	}
 	

@@ -289,5 +289,17 @@ class GeneralUtils {
 		$path = implode('/', $pathComponents);
 		return $parsed['scheme'] . "://" . $parsed['host'] . $path;
 	}
+	
+	public static function serverBasePath()
+	{
+	  $currentpath = $_SERVER['DOCUMENT_ROOT'] .  $_SERVER['PHP_SELF'];
+		$currentpath = dirname($currentpath);
+		$endpos = strrpos($currentpath, '/');
+		if ( $endpos === FALSE ) {
+			$endpos = strrpos($currentpath, '\\');
+		}
+		$basePath = substr($currentpath, 0, $endpos);
+		return $basePath;
+	}
 }
 ?>
