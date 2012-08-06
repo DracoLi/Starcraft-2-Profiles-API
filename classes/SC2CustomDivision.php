@@ -113,7 +113,7 @@ class SC2CustomDivision {
 	    
 	    // Get all ranks for this custom divisions by going through all pages
 	    $divisionRanks = array();
-	    while ( count($divisionRanks) == 0 || $nextPage !== NULL ) {
+	    while ( $nextPage !== NULL ) {
 	      list($ranks, $nextPage) = $this->parseCustomDivisionPage($nextPage);
 	      $divisionRanks = array_merge($divisionRanks, $ranks);
 	    }

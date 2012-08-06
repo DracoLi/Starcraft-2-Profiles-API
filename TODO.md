@@ -18,3 +18,7 @@
 - <s>Rewrite bnet profile parser</s>
 
 - Add support for custom divisions in our own server.
+
+- Return total pages/count for every paging enabled request (rankings, search, feeds, divisions)
+
+- Add korean bnet to feeds parser

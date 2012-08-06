@@ -21,7 +21,8 @@ $defaultParams = array(
     'amount' => '10', 
     'offset' => '0', 
     'type' => 'json',
-    'region' => 'na'
+    'region' => 'na',
+    'update' => 'true'
 );
 $options = GeneralUtils::getDefaults($defaultParams, $options);
 
