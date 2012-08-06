@@ -10,3 +10,9 @@
 - <s>None of the derived sc2rank links are working</s>
 
 - Set up easy development to production switch (cache etc)
+
+- Enable league sorting in player search (close leagues go to the top)
+
+- Custom lists!
+
+- Rewrite bnet profile parser

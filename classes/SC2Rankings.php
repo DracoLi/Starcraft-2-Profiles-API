@@ -14,7 +14,7 @@ class SC2Rankings {
 	private $dataToPrint;
 	
 	
-	const CACHEAMOUNT = 100;		  // Total number of rankings we wil store. Thus users cannot request more than this.
+	const CACHEAMOUNT = 200;		  // Total number of rankings we wil store. Thus users cannot request more than this.
 	const MAX_CACHE_TIME = 1800; 	// Every 30 min update rankings
 	const OUR_RANKINGS_PER_PAGE = 30;
 	const SC2RANKS_RANKS_PER_PAGE = 100;
@@ -65,8 +65,9 @@ class SC2Rankings {
     
 		// Grab our json data within the user specified range
 		$newDataIndex = 0;
-		$startIndex = ($this->options['page'] - 1) * SC2Rankings::OUR_RANKINGS_PER_PAGE;
-		$endIndex = min( $startIndex + SC2Rankings::OUR_RANKINGS_PER_PAGE, count($jsonArray) );
+		$startIndex = $this->options['offset'];
+		$amount = isset($this->options['amount']) ? $this->options['amount'] : SC2Rankings::OUR_RANKINGS_PER_PAGE;
+		$endIndex = min( $startIndex + $amount, count($jsonArray) );
 		for ( $i = $startIndex; $i < $endIndex; $i++ ) {
 			$newData[$newDataIndex] = $jsonArray[$i];
 			$newDataIndex++;

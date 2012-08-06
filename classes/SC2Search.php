@@ -54,7 +54,7 @@ class SC2Search {
 	
 		$targetURL = 'http://www.sc2ranks.com/search/' . 
 					$options['type'] . '/' . $region . 
-					'/' . $options['name'] . '/' . ($options['page'] - 1)* 100;
+					'/' . rawurlencode($options['name']) . '/' . ($options['page'] - 1)* 100;
 					
 		return $targetURL;
 	}

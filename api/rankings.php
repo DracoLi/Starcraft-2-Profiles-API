@@ -12,10 +12,9 @@ $defaultParams = array('region' => 'global',
 					   'league' => 'grandmaster',
 					   'bracket' => '1',
 					   'race' => 'all',
-					   'page' => 1,
+					   'offset' => 0,
 					   'update' => 'true',
 					   'type' => 'json');
-$defaultParams['update'] = ENVIROMENT == "DEVELOPMENT" ? "true" : 'false';
 
 // Get basic parameters
 $options = array();
@@ -25,7 +24,8 @@ $options['bracket'] = $_GET['bracket'];	// 1, 2t, 2r, 3t, 3r, 4t, 4r
 $options['race'] = $_GET['race'];		// all, zerg, protess, terran, random
 
 $options['update'] = $_GET['update'];	// update our cache
-$options['page'] = $_GET['page'];	// update our cache
+$options['offset'] = $_GET['offset'];	// update our cache
+$options['amount'] = $_GET['amount'];	// update our cache
 $options['type'] = $_GET['type'];	// update our cache
 
 // Merge user param with default
