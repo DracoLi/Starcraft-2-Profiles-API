@@ -13,6 +13,8 @@
 
 - Enable league sorting in player search (close leagues go to the top)
 
-- Custom lists!
+- <s>Custom lists!</s>
 
-- Rewrite bnet profile parser
+- <s>Rewrite bnet profile parser</s>
+
+- Add support for custom divisions in our own server.

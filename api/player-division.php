@@ -9,8 +9,8 @@ require_once('../classes/SC2Division.php');
 
 // Get basic parameters
 $options = array();
-$options['url'] = $_POST['url'];			// URL of the division page
-$options['content'] = $_POST['content'];	// Content of the division page
+$options['url'] = $_REQUEST['url'];			// URL of the division page
+$options['content'] = $_REQUEST['content'];	// Content of the division page
 
 // Handle cases when no content is provided - Users should always have the right divisions url (we cannot guess it).
 if ( is_null($options['content']) || strlen($options['content']) == 0 ) {
@@ -19,7 +19,7 @@ if ( is_null($options['content']) || strlen($options['content']) == 0 ) {
 		RestUtils::sendResponse(400); // Must provide content! Bad request!
 	}else {
 		$defaultParams = array('url' => 'http://kr.battle.net/sc2/ko/profile/2737020/1/%EC%B4%88%EB%B3%B4%EC%9C%A0%ED%9D%AC/ladder/leagues#current-rank',
-							   'content' => '');
+							            'content' => '');
 		$options = GeneralUtils::getDefaults($defaultParams, $options);
 
 		// If in development, we fetch the contenct from the target url instead

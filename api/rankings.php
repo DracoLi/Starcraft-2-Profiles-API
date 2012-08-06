@@ -5,7 +5,7 @@
  * For GM rankings, we use crontab to auto cache. For SC2Ranks, users initiate caching.
  * Since we are caching, we can visit ranks directly.
  */
-require('../classes/SC2Rankings.php');
+require_once('../classes/SC2Rankings.php');
 
 // Default Params, this is used when cettain options not specified
 $defaultParams = array('region' => 'global',
@@ -23,10 +23,10 @@ $options['league'] = $_GET['league'];	// bronze, silver, gold, platinum, master,
 $options['bracket'] = $_GET['bracket'];	// 1, 2t, 2r, 3t, 3r, 4t, 4r
 $options['race'] = $_GET['race'];		// all, zerg, protess, terran, random
 
-$options['update'] = $_GET['update'];	// update our cache
-$options['offset'] = $_GET['offset'];	// update our cache
-$options['amount'] = $_GET['amount'];	// update our cache
-$options['type'] = $_GET['type'];	// update our cache
+$options['update'] = $_GET['update'];
+$options['offset'] = $_GET['offset'];
+$options['amount'] = $_GET['amount'];
+$options['type'] = $_GET['type'];
 
 // Merge user param with default
 $options = GeneralUtils::getDefaults($defaultParams, $options);

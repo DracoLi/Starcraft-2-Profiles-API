@@ -315,109 +315,192 @@ class SC2Player {
 		$achivementPoints = $playerHTML->find('#profile-header h3', 0)->plaintext;
 		$jsonArray['achivementPoints'] = GeneralUtils::parseInt($achivementPoints);
 		
+		// Season stats
+		{
+			$seasonStats = $playerHTML->find('#season-snapshot', 0);
+			
+			// Get games tis season
+			$gamesThisSeason = $seasonStats->find('.stat-block h2', 0)->plaintext;
+			$jsonArray['gamesThisSeason'] = GeneralUtils::parseInt($gamesThisSeason);
+				
+			// Most played mode
+			$mostPlayedMode = $seasonStats->find('.stat-block h2', 1)->plaintext;
+			$jsonArray['mostPlayedMode'] = GeneralUtils::parseInt($mostPlayedMode);
+			
+			// Total career games
+			$careerGames = $seasonStats->find('.stat-block h2', 2)->plaintext;
+			$jsonArray['careerGames'] = GeneralUtils::parseInt($careerGames);
+			
+			// Most played race
+			$mostPlayedRace = $seasonStats->find('.stat-block h2', 3)->plaintext;
+			$mostPlayedRaceKey = $seasonStats->find('.module-body', 0)->getAttribute('class');
+			$startpos = strpos($mostPlayedRaceKey, 'snapshot-') + strlen('snapshot-');
+			$mostPlayedRaceKey = trim(substr($mostPlayedRaceKey, $startpos));
+			$jsonArray['mostPlayedRaceString'] = $mostPlayedRace;
+			$jsonArray['mostPlayedRaceKey'] = $mostPlayedRaceKey;
+			
+		}
+		
 		// Career stats
 		{
-			$careerStats = $playerHTML->find('#career-stats .module-body', 0);
-			
-			// Get league wins
-			$leagueWins = $careerStats->find('h2', 0)->plaintext;
-			$jsonArray['leagueWins'] = GeneralUtils::parseInt($leagueWins);
-				
-			// Get custom games
-			$customGames = $careerStats->find('ul li span', 0)->plaintext;
-			$jsonArray['customGames'] = GeneralUtils::parseInt($customGames);
-			
-			// Get FFA games
-			$ffaGames = $careerStats->find('ul li span', 1)->plaintext;
-			$jsonArray['ffaGames'] = GeneralUtils::parseInt($ffaGames);
-			
-			// Get coop games
-			$coopGames = $careerStats->find('ul li span', 2)->plaintext;
-			$jsonArray['coopGames'] = GeneralUtils::parseInt($coopGames);
-			
-			// Get campaign mode
-			$campaignMode = $careerStats->getAttribute('class');
-			$startpos = strpos($campaignMode, 'campaign-') +  strlen('campaign-');
-			$campaignMode = substr($campaignMode, $startpos);
-			$jsonArray['campaign'] = strtolower($campaignMode);
+		  $careerStats = $playerHTML->find('#career-stats', 0);
+		  
+		  // For solo
+		  $bestSolo = $careerStats->find('#best-finish-SOLO', 0);
+
+		  $soloString = $bestSolo->plaintext;
+		  $careerWords = $bestSolo->find('strong', 0)->plaintext;
+		  $timesWords = $bestSolo->find('strong', 1)->plaintext;
+		  $leagueWords = $bestSolo->find('strong', 2)->plaintext;
+		  
+		  // Solo league key and rank
+		  $bestSoloLeague = $careerStats->find('.badge-item', 0);
+		  $bestSoloLeague = $bestSoloLeague->find('.badge span', 0)->getAttribute('class');
+		  $startpos = strpos($bestSoloLeague, 'badge-') + strlen('badge-');
+		  $soloLeague = substr($bestSoloLeague, $startpos);
+		  $endpos = strpos($soloLeague, 'badge-') - 1;
+		  $soloLeagueKey = trim( substr($soloLeague, 0, $endpos) );
+		  $badgeRank = GeneralUtils::parseInt($bestSoloLeague);
+		  $jsonArray['bestSoloBadgeRank'] = $badgeRank;
+		  $jsonArray['bestSoloLeagueKey'] = $soloLeagueKey;
+		  
+		  // Team league string
+		  $startpos = strpos($soloString, $careerWords) + strlen($careerWords);
+		  $endpos = strpos($soloString, $timesWords);
+		  $soloLeagueValue = trim(substr($soloString, $startpos, $endpos - $startpos));
+		  $jsonArray['bestSoloLeagueString'] = $soloLeagueValue;
+		  
+		  // Team times achieved
+		  $startpos = $endpos + strlen($timesWords);
+		  $endpos = strpos($soloString, $leagueWords);
+		  $timesAchieved = substr($soloString, $startpos, $endpos - $startpos);
+		  $timesAchieved = GeneralUtils::parseInt($timesAchieved);
+		  $jsonArray['bestSoloTimesAchieved'] = $timesAchieved;
+		  
+		  // Team current league
+		  $startpos = $endpos + strlen($leagueWords);
+		  $soloTeamLeague = trim(substr($soloString, $startpos));
+		  $jsonArray['currentSoloLeague'] = $soloTeamLeague;
+		  
+		  
+		  // For team
+		  $bestTeam = $careerStats->find('#best-finish-TEAM', 0);
+
+		  $teamString = $bestTeam->plaintext;
+		  $careerWords = $bestTeam->find('strong', 0)->plaintext;
+		  $timesWords = $bestTeam->find('strong', 1)->plaintext;
+		  $leagueWords = $bestTeam->find('strong', 2)->plaintext;
+		  
+		  // Team league key and rank
+		  $bestTeamLeague = $careerStats->find('.badge-item', 1);
+		  $bestTeamLeague = $bestTeamLeague->find('.badge span', 0)->getAttribute('class');
+		  $startpos = strpos($bestTeamLeague, 'badge-') + strlen('badge-');
+		  $teamLeague = substr($bestTeamLeague, $startpos);
+		  $endpos = strpos($teamLeague, 'badge-') - 1;
+		  $teamLeagueKey = trim( substr($teamLeague, 0, $endpos) );
+		  $badgeRank = GeneralUtils::parseInt($bestTeamLeague);
+		  $jsonArray['bestTeamBadgeRank'] = $badgeRank;
+		  $jsonArray['bestTeamLeagueKey'] = $teamLeagueKey;
+		  
+		  // Team league string
+		  $startpos = strpos($teamString, $careerWords) + strlen($careerWords);
+		  $endpos = strpos($teamString, $timesWords);
+		  $teamLeagueValue = trim(substr($teamString, $startpos, $endpos - $startpos));
+		  $jsonArray['bestTeamLeagueString'] = $teamLeagueValue;
+		  
+		  // Team times achieved
+		  $startpos = $endpos + strlen($timesWords);
+		  $endpos = strpos($teamString, $leagueWords);
+		  $timesAchieved = substr($teamString, $startpos, $endpos - $startpos);
+		  $timesAchieved = GeneralUtils::parseInt($timesAchieved);
+		  $jsonArray['bestTeamTimesAchieved'] = $timesAchieved;
+		  
+		  // Team current league
+		  $startpos = $endpos + strlen($leagueWords);
+		  $currentTeamLeague = trim(substr($teamString, $startpos));
+		  $jsonArray['currentTeamLeague'] = $currentTeamLeague;
+		  
+		  // Campaign
+		  $badgeNode = $careerStats->find('.campaign', 0);
+		  $badgeClass = $badgeNode->find('.badge', 0)->getAttribute('class');
+		  $startpos = strpos($badgeClass, 'badge') + strlen('badge');
+		  $campaignKey = trim(substr($badgeClass, $startpos));
+		  $campaignString = trim($badgeNode->find('.rank', 0)->plaintext);
+		  $jsonArray['campaignKey'] = $campaignKey;
+		  $jsonArray['campaignString'] = $campaignString;
 		}
 		
-		// Get race
-		$race = $playerHTML->find('.module-footer a', 0)->getAttribute('class');
-		$startpos = strpos($race, 'race-') + strlen('race-');
-		$jsonArray['race'] = strtolower(substr($race, $startpos));
-		
-		// Add user's divisions
-		$divisions = array();
-		$divisionsNode = $playerHTML->find('.module-body .snapshot');
-		foreach ( $divisionsNode as $divisionNode ) {
-			
-			$divClass = $divisionNode->getAttribute('class');
-			if ( strpos($divClass, 'empty-season') !== FALSE ) {
-				// If this onedivion is empty, continue to next
-				continue;
-			}
-			
-			$oneDivision = array();
-			
-			// Get division league
-			$badge = $divisionNode->find('a .badge', 0)->getAttribute('class');
-			$startpos = strpos($badge, 'badge-') + strlen('badge-');
-			$endpos = strpos($badge, ' ', $startpos);
-			$league = substr($badge, $startpos, ($endpos - $startpos));
-			$oneDivision['league'] = strtolower($league);
-			
-			// Get division bracket
-			$divisionID = $divisionNode->find('.ladder', 0)->getAttribute('data-tooltip');
-			preg_match('/\d/', $divisionID, $matches);
-			$oneDivision['bracket'] = GeneralUtils::parseInt($matches[0]);
-			
-			// Get division name
-			$fullWords = $divisionNode->find("$divisionID div", 1)->plaintext;
-			$nameLabel = $divisionNode->find("$divisionID div strong", 0)->plaintext;
-			$rankLabel = $divisionNode->find("$divisionID div strong", 1)->plaintext;
-			if ( $oneDivision['league'] != 'grandmaster' ) {
-				$startpos = strpos($fullWords, $nameLabel) + strlen($nameLabel);
-				$endpos = strpos($fullWords, $rankLabel, $startpos);
-				$divisionName = substr($fullWords, $startpos, ($endpos - $startpos));
-				$oneDivision['name'] = trim($divisionName);
-			}else {
-				$oneDivision['name'] = "Grandmaster";
-			}
-			
-			// Get division url
-			$divisionURL = $divisionNode->find('.ladder a', 0)->getAttribute('href');
-			$divisionURL = $userBaseURL . $divisionURL;
-			$oneDivision['url'] = $divisionURL;
-			
-			// Get division rank
-			$startpos = strpos($fullWords, $rankLabel) + strlen($rankLabel);
-			$divisionRank = substr($fullWords, $startpos);
-			$oneDivision['rank'] = GeneralUtils::parseInt($divisionRank);
-	
-			// Get division wins
-			$theNodes = $divisionNode->find('.graph-bars .totals');
-			if ( count($theNodes) > 1 ) {
-				// Losses exists
-				$totalGames = $divisionNode->find('.graph-bars .totals', 0)->plaintext;
-				$totalGames = GeneralUtils::parseInt($totalGames);
-				$wins = $divisionNode->find('.graph-bars .totals', 1)->plaintext;
-				$wins = GeneralUtils::parseInt($wins);
-				$losses = $totalGames - $wins;
-				
-				$oneDivision['wins'] = $wins;
-				$oneDivision['losses'] = $losses;
-			}else {
-				// Only wins
-				$wins = $divisionNode->find('.graph-bars .totals', 0)->plaintext;
-				$wins = GeneralUtils::parseInt($wins);
-				$oneDivision['wins'] = $wins;
-			}
-			
-			$divisions[] = $oneDivision;
-		}
-		
-		$jsonArray['divisions'] = $divisions;
+		// // Add user's divisions
+		//    $divisions = array();
+		//    $divisionsNode = $playerHTML->find('.module-body .snapshot');
+		//    foreach ( $divisionsNode as $divisionNode ) {
+		//      
+		//      $divClass = $divisionNode->getAttribute('class');
+		//      if ( strpos($divClass, 'empty-season') !== FALSE ) {
+		//        // If this onedivion is empty, continue to next
+		//        continue;
+		//      }
+		//      
+		//      $oneDivision = array();
+		//      
+		//      // Get division league
+		//      $badge = $divisionNode->find('a .badge', 0)->getAttribute('class');
+		//      $startpos = strpos($badge, 'badge-') + strlen('badge-');
+		//      $endpos = strpos($badge, ' ', $startpos);
+		//      $league = substr($badge, $startpos, ($endpos - $startpos));
+		//      $oneDivision['league'] = strtolower($league);
+		//      
+		//      // Get division bracket
+		//      $divisionID = $divisionNode->find('.ladder', 0)->getAttribute('data-tooltip');
+		//      preg_match('/\d/', $divisionID, $matches);
+		//      $oneDivision['bracket'] = GeneralUtils::parseInt($matches[0]);
+		//      
+		//      // Get division name
+		//      $fullWords = $divisionNode->find("$divisionID div", 1)->plaintext;
+		//      $nameLabel = $divisionNode->find("$divisionID div strong", 0)->plaintext;
+		//      $rankLabel = $divisionNode->find("$divisionID div strong", 1)->plaintext;
+		//      if ( $oneDivision['league'] != 'grandmaster' ) {
+		//        $startpos = strpos($fullWords, $nameLabel) + strlen($nameLabel);
+		//        $endpos = strpos($fullWords, $rankLabel, $startpos);
+		//        $divisionName = substr($fullWords, $startpos, ($endpos - $startpos));
+		//        $oneDivision['name'] = trim($divisionName);
+		//      }else {
+		//        $oneDivision['name'] = "Grandmaster";
+		//      }
+		//      
+		//      // Get division url
+		//      $divisionURL = $divisionNode->find('.ladder a', 0)->getAttribute('href');
+		//      $divisionURL = $userBaseURL . $divisionURL;
+		//      $oneDivision['url'] = $divisionURL;
+		//      
+		//      // Get division rank
+		//      $startpos = strpos($fullWords, $rankLabel) + strlen($rankLabel);
+		//      $divisionRank = substr($fullWords, $startpos);
+		//      $oneDivision['rank'] = GeneralUtils::parseInt($divisionRank);
+		//  
+		//      // Get division wins
+		//      $theNodes = $divisionNode->find('.graph-bars .totals');
+		//      if ( count($theNodes) > 1 ) {
+		//        // Losses exists
+		//        $totalGames = $divisionNode->find('.graph-bars .totals', 0)->plaintext;
+		//        $totalGames = GeneralUtils::parseInt($totalGames);
+		//        $wins = $divisionNode->find('.graph-bars .totals', 1)->plaintext;
+		//        $wins = GeneralUtils::parseInt($wins);
+		//        $losses = $totalGames - $wins;
+		//        
+		//        $oneDivision['wins'] = $wins;
+		//        $oneDivision['losses'] = $losses;
+		//      }else {
+		//        // Only wins
+		//        $wins = $divisionNode->find('.graph-bars .totals', 0)->plaintext;
+		//        $wins = GeneralUtils::parseInt($wins);
+		//        $oneDivision['wins'] = $wins;
+		//      }
+		//      
+		//      $divisions[] = $oneDivision;
+		//    }
+		//    
+		//    $jsonArray['divisions'] = $divisions;
 		
 		// Finish bnet profile for player
 		return $jsonArray;
