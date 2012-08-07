@@ -19,7 +19,7 @@ class SC2Feeds {
   private $dataToPrint;
   private $options;
   
-  const PAGES_TO_PARSE = 4;
+  const PAGES_TO_PARSE = 1;
   
   public function __construct($options)
 	{
@@ -251,34 +251,19 @@ class SC2Feeds {
   protected function getOurFeeds()
   {
     $feedsPath = GeneralUtils::serverBasePath() . DIRECTORY_SEPARATOR . 'assets' .
-              DIRECTORY_SEPARATOR . 'feeds/*';
-    $feeds = array();
-    foreach ( glob($feedsPath) as $file )
-    {
-      $feed = array();
-      $fileContent = file_get_contents($file);
-      $doc = str_get_html($fileContent);
-      
-      // Get feed title
-      $feed["title"] = $doc->find('head title', 0)->plaintext;
-      
-      // Get feed posted date
-      $fileName = basename($file);
-      $dateString = substr($fileName, 0, strpos($fileName, '.html'));
-      $feed["postedDate"] = (int)strtotime($dateString);
-      
-      // Get feed contentRaw
-      $feed["content"] = $doc->find('meta[name=description]', 0)->getAttribute('content');
-      
-      $feed["url"] = $file;
-      
-      // Set feed type
-      $feed["sourceType"] = "SC2Enhanced";
-      
-      $feeds[] = $feed;
+              DIRECTORY_SEPARATOR . 'feeds.json';
+    $feeds = json_decode(file_get_contents($feedsPath));
+    
+    // Process our feeds
+    $adjustedFeeds = array();
+    foreach ( $feeds as $feed ) {
+      $feed->url = GeneralUtils::serverBasePath() . DIRECTORY_SEPARATOR . 'assets' .
+                     DIRECTORY_SEPARATOR . 'feeds' . DIRECTORY_SEPARATOR . $feed->url . '.html';
+      $feed->postedDate = (int)strtotime($feed->postedDate);
+      $adjustedFeeds[] = $feed;
     }
     
-    return $feeds;
+    return $adjustedFeeds;
   }
   
   /**

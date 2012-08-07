@@ -22,7 +22,7 @@ $defaultParams = array(
     'offset' => '0', 
     'type' => 'json',
     'region' => 'na',
-    'update' => 'true'
+    'update' => 'false'
 );
 $options = GeneralUtils::getDefaults($defaultParams, $options);
 
