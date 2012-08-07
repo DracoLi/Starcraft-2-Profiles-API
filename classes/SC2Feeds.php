@@ -257,7 +257,7 @@ class SC2Feeds {
     // Process our feeds
     $adjustedFeeds = array();
     foreach ( $feeds as $feed ) {
-      $feed->url = GeneralUtils::serverBasePath() . DIRECTORY_SEPARATOR . 'assets' .
+      $feed->url = $_SERVER["SERVER_NAME"] . DIRECTORY_SEPARATOR . 'assets' .
                      DIRECTORY_SEPARATOR . 'feeds' . DIRECTORY_SEPARATOR . $feed->url . '.html';
       $feed->postedDate = (int)strtotime($feed->postedDate);
       $adjustedFeeds[] = $feed;
