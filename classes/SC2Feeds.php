@@ -260,6 +260,7 @@ class SC2Feeds {
       $feed->url = "http://" . $_SERVER['HTTP_HOST'] . DIRECTORY_SEPARATOR . 'assets' .
                      DIRECTORY_SEPARATOR . 'feeds' . DIRECTORY_SEPARATOR . $feed->url . '.html';
       $feed->postedDate = (int)strtotime($feed->postedDate);
+      $feed->sourceType = "SC2Enhanced";
       $adjustedFeeds[] = $feed;
     }
     

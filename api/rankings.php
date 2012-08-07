@@ -14,7 +14,8 @@ $defaultParams = array('region' => 'global',
 					   'race' => 'all',
 					   'offset' => 0,
 					   'update' => 'true',
-					   'type' => 'json');
+					   'type' => 'json',
+					   'amount' => 20);
 
 // Get basic parameters
 $options = array();

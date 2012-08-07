@@ -64,21 +64,17 @@ class SC2Rankings {
 		$jsonArray = json_decode($targetJsonData);
     
 		// Grab our json data within the user specified range
-		$newDataIndex = 0;
-		$startIndex = $this->options['offset'];
-		$amount = isset($this->options['amount']) ? $this->options['amount'] : SC2Rankings::OUR_RANKINGS_PER_PAGE;
-		$endIndex = min( $startIndex + $amount, count($jsonArray) );
-		for ( $i = $startIndex; $i < $endIndex; $i++ ) {
-			$newData[$newDataIndex] = $jsonArray[$i];
-			$newDataIndex++;
-		}
+		$offset = $this->options['offset'];
+		$amount = $this->options['amount'];
+		$ranksData = array_slice($jsonArray, $offset ,$amount);
 		
-		// Check if we have anything to send
-		if ( count($newData) == 0 ) {
-			return NULL;
-		}
-		
-		return json_encode($newData);;
+		// Add in the total amount of feeds to have
+	  $jsonResult = array();
+	  $jsonResult['total'] = count($jsonArray);
+	  $jsonResult['returnedAmount'] = count($ranksData);
+	  $jsonResult['ranks'] = $ranksData;
+	  
+		return json_encode($jsonResult);
 	}
 	
 	/**
