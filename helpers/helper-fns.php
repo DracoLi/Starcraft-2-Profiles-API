@@ -1,5 +1,6 @@
 <?php
 require_once('../classes/global-config.php');
+require_once('../helpers/RestUtils.php');
 
 class SC2Utils {
 	
@@ -23,8 +24,8 @@ class SC2Utils {
 		}else {
 		  // China and taiwan already uses the standard
 		}
-		$timeStamp = (int)strtotime($joinedDate);
-		return ($testing == 'DEVELOPMENT') ? date('Y-m-d', $timeStamp) : $timeStamp;
+		
+		return (int)strtotime($joinedDate);
 	}
 	
 	public static function estimateBLink($ranksLink)
@@ -134,10 +135,10 @@ class SC2Utils {
 	 */
 	public static function isbnetURL($url)
 	{
-		if ( strpos($url, 'battle') !== FALSE  ) {
-			return TRUE;
-		}else if ( strpos($url, 'sc2ranks') !== FALSE ){
+		if ( strpos($url, 'sc2ranks') !== FALSE ) {
 			return FALSE;
+		}else if ( strpos($url, 'battle') !== FALSE  ) {
+			return TRUE;
 		}
 		return FALSE;
 	}
@@ -259,11 +260,15 @@ class GeneralUtils {
 		}
 	}
 	
-	public static function printArray($array)
+	public static function printObject($array)
 	{
-		echo "<br>";
-		print_r($array);
-		echo "</br>";	
+	  echo RestUtils::getHTTPHeader('Testing') . "<pre>" . 
+	      print_r($array, TRUE) .  "</pre>" . RestUtils::getHTTPFooter();
+	}
+	
+	public static function printJSON($json)
+	{
+	  RestUtils::sendResponse(200, $json, '', 'application/json');
 	}
 	
 	public static function getBaseURL($url)
@@ -300,6 +305,40 @@ class GeneralUtils {
 		}
 		$basePath = substr($currentpath, 0, $endpos);
 		return $basePath;
+	}
+	
+	/**
+	 * Adjust results so we only get whats needed and insert some paging related information
+	 */
+	public static function prepareForPaging($results, $offset, $amount, $key, $path = NULL)
+	{
+	  $data = array();
+	  
+	  // Slice the results
+	  $arrayData = $results;
+	  if ( $path ) {
+	    $arrayData = $results[$path];
+	  }
+	  
+	  $totalCount = count($arrayData);
+	  
+	  $needed = array_slice($arrayData, $offset ,$amount);
+	  
+	  if ( $path ) {
+	    $results[$path] = $needed;
+	  }
+	  
+	  // Add in some paging info
+	  $data['total'] = $totalCount;
+	  $data['returnedAmount'] = count($needed);
+	  $data[$key] = $results;
+	  
+	  return $data;
+	}
+	
+	public static function timeStampToDate($timestamp)
+	{
+	  return date('Y-m-d', $timestamp);
 	}
 }
 ?>

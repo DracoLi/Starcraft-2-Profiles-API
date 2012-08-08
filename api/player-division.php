@@ -2,41 +2,45 @@
 
 /** 
  * Take a division url and returns all info for that division
- * Support only sc2ranks division links because we need those sc2rank profile links! So no reason to also use bnet divisions.
  */
-
 require_once('../classes/SC2Division.php');
+require_once('../helpers/helper-fns.php');
 
+// Default Params, this is used when cettain options not specified
+$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/2439371/1/coLMinigun/ladder/leagues',
+					   'offset' => 0,
+					   'amount' => 30,
+					   'type' => 'json');
+					   
 // Get basic parameters
 $options = array();
-$options['url'] = $_REQUEST['url'];			// URL of the division page
+$options['url'] = $_REQUEST['url'];			    // URL of the division page. Ranks or BNET.
 $options['content'] = $_REQUEST['content'];	// Content of the division page
+$options['offset'] = $_REQUEST['offset']; 
+$options['amount'] = $_REQUEST['amount'];
+$options['type'] = $_REQUEST['type'];
 
-// Handle cases when no content is provided - Users should always have the right divisions url (we cannot guess it).
-if ( is_null($options['content']) || strlen($options['content']) == 0 ) {
-	
-	if ( ENVIROMENT == 'PRODUCTION' ) {
-		RestUtils::sendResponse(400); // Must provide content! Bad request!
-	}else {
-		$defaultParams = array('url' => 'http://kr.battle.net/sc2/ko/profile/2737020/1/%EC%B4%88%EB%B3%B4%EC%9C%A0%ED%9D%AC/ladder/leagues#current-rank',
-							            'content' => '');
-		$options = GeneralUtils::getDefaults($defaultParams, $options);
+// Merge user param with default
+$options = GeneralUtils::getDefaults($defaultParams, $options);
 
-		// If in development, we fetch the contenct from the target url instead
-		$urlconnect = new URLConnect($options['url'], 100, FALSE);
-		if ( $urlconnect->getHTTPCode() != 200 ) {
-			RestUtils::sendResponse($urlconnect->getHTTPCode());
-			exit;
-		}
-		$options['content'] = $urlconnect->getContent();
+// If used by client, we should always have content, if not then its probably development
+// And If that's the case we get the content
+if ( !isset($options['content']) || strlen($options['content']) == 0 ) {
+  $urlconnect = new URLConnect($options['url'], 100, FALSE);
+	if ( $urlconnect->getHTTPCode() != 200 ) {
+		RestUtils::sendResponse($urlconnect->getHTTPCode());
+		exit;
 	}
+	$options['content'] = $urlconnect->getContent();
 }
 
-$sc2division = new SC2Division($options['content'], $options['url']);
-if ( ENVIROMENT == 'DEVELOPMENT' ) {
-	$sc2division->displayArray();
-}else {
-	RestUtils::sendResponse(200, $sc2division->getJsonData(), '' , 'application/json');
+$sc2division = new SC2Division($options);
+$divisionData = $sc2division->parseDivision();
+
+if ( $options['type'] == 'html' ) {
+	GeneralUtils::printObject($divisionData);
+}else if ( $options['type'] == 'json' ) {
+  GeneralUtils::printJSON(json_encode($divisionData));
 }
 
 ?>

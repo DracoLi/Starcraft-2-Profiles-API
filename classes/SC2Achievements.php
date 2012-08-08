@@ -31,17 +31,8 @@ class SC2Achievements {
 	 */
 	public function __construct($content, $url)
 	{
-		if ( isset($content) ) {
-			
-			$this->content = $content;
-			$this->contentURL = $url;
-		}else {
-			// We got nothing - this also ends page
-			RestUtils::sendResponse(204);
-			exit;
-		}
-		
-		$this->jsonData = json_encode($this->getAchievementsData());
+	  $this->content = $content;
+		$this->contentURL = $url;
 	}
 	
 	/**
@@ -49,12 +40,12 @@ class SC2Achievements {
 	 * @param url The player's base url
 	 * @return json the player's achievements
 	 */
-	public static function getAllAchievements($base)
+	public function getAllAchievementLinks()
 	{
-		// Construct an array of achivement sections
+	  // Construct an array of achivement sections
 		$data = simplexml_load_file('../assets/achievements.xml');
-		$achievementsData = SC2Achievements::parseInnerAchievements($data->children(), $base);
-		return json_encode($achievementsData);
+		$achievementsData = SC2Achievements::parseInnerAchievements($data->children(), $this->contentURL);
+		return $achievementsData;
 	}
 	
 	/**
@@ -81,33 +72,16 @@ class SC2Achievements {
 		return $allAchievements;		
 	}
 	
-	public function getJsonData()
-	{
-		return $this->jsonData;
-	}
-	
-	/**
-	 * Print out the json data in array format
-	 * @return void
-	 */
-	public function displayArray()
-	{
-		$this->addThingsToPrint('<h2><a href="' . $this->contentURL . '">' .$this->contentURL . '</a></h2><pre>' . print_r(json_decode($this->getJsonData()), TRUE) . '</pre>');
-		
-		$fullContent = RestUtils::getHTTPHeader('Testing') . $this->dataToPrint . RestUtils::getHTTPFooter(); 
-		RestUtils::sendResponse(200, $fullContent);
-	}
-	
 	/**
 	 * Parse the content to get achievements data
 	 * @return Array the json array for the achievements data
 	 */
-	protected function getAchievementsData()
+	public function getAchievementsData()
 	{
 		// Get contents for results
 		$pageHTML = str_get_html($this->content)->find('#profile-right', 0);
 		$achievementCategory = array();
-		$userBaseURL = GeneralUtils::getBaseURL($targetURL);
+		$userBaseURL = GeneralUtils::getBaseURL($this->contentURL);
 		
 		// Get general category info (progress)
 		$progressNode = $pageHTML->find('.achievements-progress span', 0);
@@ -224,9 +198,8 @@ class SC2Achievements {
 			// Add this achievement to our array
 			$achievements[] = $oneAchievement;
 		}
-		$achievementCategory['achievements'] = $achievements;
 		
-		return $achievementCategory;
+		return $achievements;
 	}
 	
 	protected function getSeries($theNode, $userBaseURL)
@@ -308,6 +281,23 @@ class SC2Achievements {
 		}
 		
 		return $criteria;
+	}
+	
+	public function getJsonData()
+	{
+		return $this->jsonData;
+	}
+	
+	/**
+	 * Print out the json data in array format
+	 * @return void
+	 */
+	public function displayArray()
+	{
+		$this->addThingsToPrint('<h2><a href="' . $this->contentURL . '">' .$this->contentURL . '</a></h2><pre>' . print_r(json_decode($this->getJsonData()), TRUE) . '</pre>');
+		
+		$fullContent = RestUtils::getHTTPHeader('Testing') . $this->dataToPrint . RestUtils::getHTTPFooter(); 
+		RestUtils::sendResponse(200, $fullContent);
 	}
 	
 	/**

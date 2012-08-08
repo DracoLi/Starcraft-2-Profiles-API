@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Gets a list of custom divisions specified by us
+ */
 require_once('../classes/SC2CustomDivision.php');
 require_once('../helpers/RestUtils.php');
 

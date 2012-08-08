@@ -16,61 +16,63 @@ require_once('../helpers/URLConnect.php');
  */
 class SC2Division {
 
-	private $jsonData;
-	private $content;
-	private $contentURL;
-	private $dataToPrint;
+	private $options;
 	
 	/**
-	 * Initializes the SC2Division by assigning the content to parse. Then perfrom the parse.
-	 * If no content is received, we send out an error page
-	 * @param $content the content of parse
-	 * @param $url The url of the content to be parsed (the division link url). Used to determine if its BNET data or ranks data.
+	 * Initializes the SC2Division by assigning some options.
 	 * @return void
 	 */
-	public function __construct($content, $url = RANKSURL)
+	public function __construct($options)
 	{
-		if ( isset($content) ) {
-			$this->content = $content;
-			$this->contentURL = $url;
+	  $this->options = $options;	
+	}
+	
+	/**
+	 * Parse division info, can be BNET or Ranks
+	 *  Paging is enabled
+	 */
+  public function parseDivision()
+  {
+    if ( SC2Utils::isbnetURL($this->options['url']) ) {   
+			$results = $this->getBNETDivisionInfo();
 		}else {
-			// We got nothing - this also ends page
-			RestUtils::sendResponse(204);
-			return;
+			$results = $this->getRanksDivisionInfo();
 		}
 		
-		if ( SC2Utils::isbnetURL($this->contentURL) ) {
-			$this->jsonData = json_encode($this->getBNETDivisionInfo());
-		}else {
-			$this->jsonData = json_encode($this->getRanksDivisionInfo());
-		}
-	}
+		$amount = $this->options['amount'];
+		$offset = $this->options['offset'];
+		return GeneralUtils::prepareForPaging($results, $offset, $amount, 'divisionInfo', 'ranks');
+  }
 	
 	/**
-	 * Gets the bnet player division url to retrieve a list of divisions.
-	 * @param $url The base url of the BNET player.
-	 * @return String The url link to the BNET player's divisions url.
+	 * Retrieves a list of divisions for a BNET player
+	 * @return Array An array of divisions for the player
 	 */
-	public static function getBNETPlayerDivisionsURL($url)
+	public function getAllDivisions()
 	{
-		return $url . 'ladder/leagues';
+	  $divisions = $this->parseAllDivisionsPage();
+		// If we want to grab the first div as well, the structure needs a little adjustment.
+    // $getFirstDiv = FALSE;
+    //    if ( $this->options['grabFirstDiv'] === 'true' ) {
+    //      $allInfo = array();
+    //  $allInfo['divisions'] = $divisions;
+    //  $sc2division = new SC2Division($content, $url);
+    //  $allInfo['firstDivision'] = json_decode($sc2division->getJsonData());
+    //    }
+	  
+	  return $divisions;
 	}
-	
-	/**
-	 * Retrieves a list of divisions for a BNET player profile
-	 * @param $content The divisions list content.
-	 * @param $url The url of the content being received (the divisions link url). Used to form division url.
-	 * @param $getFirstDivision Since the division list url also contains the first division data, we can optionally parse it if user wants us to. Doing so will change the result format though.
-	 * @return Array The divisions for the player. If specified, also the first division's info.
-	 */
-	public static function getBNETPlayerDivisionsList($content, $url, $getFirstDivision = FALSE)
-	{
-		// Get data to be used
-		$divisionsHTML = str_get_html($content);
+  
+  private function parseAllDivisionsPage()
+  {
+	  // Get data to be used
+		$divisionsHTML = str_get_html($this->options['content']);
 		$divisions = array();
 		
-		$endpos = strrpos($url, '/') + 1;
-		$divisionBaseURL = substr($url, 0, $endpos);
+		$leagueBaseURL = $this->options['url'];
+		// Remove the leagues from the baseURL
+		$startpos = strpos($leagueBaseURL, '/leagues');
+		$leagueBaseURL = substr($leagueBaseURL, 0, $startpos);
 		
 		$divisionNodes = $divisionsHTML->find('#profile-menu li');
 		for ( $i = 2; $i < count($divisionNodes); $i++ ) {
@@ -149,58 +151,35 @@ class SC2Division {
 			
 			// Get division url
 			$bnetLink = $divisionNode->getAttribute('href');
-			$bnetLink = $divisionBaseURL . $bnetLink;
+			$bnetLink = $leagueBaseURL . '/' . $bnetLink;
+			$startpos = strpos($bnetLink, '#');
+			$bnetLink = substr($bnetLink, 0, $startpos);
 			$oneDivision['bnetLink'] = $bnetLink;
 			
 			$divisions[] = $oneDivision;
 		}
 		
-		// If we want to grab the first div as well, the structure needs a little adjustment.
-		if ( $getFirstDivision ) {
-			$allInfo = array();
-			$allInfo['divisions'] = $divisions;
-			$sc2division = new SC2Division($content, $url);
-			$allInfo['firstDivision'] = json_decode($sc2division->getJsonData());
-			return json_encode($allInfo);
-		}
-		
-		return json_encode($divisions);
-	}
-	
-	public function getJsonData()
-	{
-		return $this->jsonData;
-	}
-	
-	/**
-	 * Print out the json data in array format
-	 * @return void
-	 */
-	public function displayArray()
-	{
-		$this->addThingsToPrint("<h2><a href=\"". $this->contentURL . "\">" . $this->contentURL . "</a></h2>");
-		$this->addThingsToPrint('<pre>' . print_r(json_decode($this->getJsonData()), TRUE) . '</pre>');
-		
-		$fullContent = RestUtils::getHTTPHeader('Testing') . $this->dataToPrint . RestUtils::getHTTPFooter(); 
-		RestUtils::sendResponse(200, $fullContent);
-	}
-	
+		return $divisions;
+  }
+  
 	/**
 	 * Parses BNET division content
 	 * @return Array the parsed json content in an array
 	 */
-	protected function getBNETDivisionInfo()
+	private function getBNETDivisionInfo()
 	{
+	  set_time_limit(60*2);
+	  
 		// Get data
-		$divisionHTML = str_get_html($this->content);
+		$divisionHTML = str_get_html($this->options['content']);
 		$divisionData = array();
-		$userBaseURL = GeneralUtils::getBaseURL($this->contentURL);
+		$userBaseURL = GeneralUtils::getBaseURL($this->options['url']);
 		
 		// Get division name
 		$nameNode = $divisionHTML->find('.data-label span', 1);
 		if ( $nameNode ) {
 			$name = $nameNode->plaintext;
-			$divisionData['name'] = trim($name);	
+			$divisionData['name'] = trim($name);
 		}else {
 			// Currently only Grandmaster doesn't have a division name
 			$divisionData['name'] = "Grandmaster";	
@@ -214,7 +193,7 @@ class SC2Division {
 		$divisionData['league'] = strtolower($league);
 		
 		// Get division region
-		$divisionData['region'] = SC2Utils::playerRegionFromBnetURL($this->contentURL);
+		$divisionData['region'] = SC2Utils::playerRegionFromBnetURL($this->options['url']);
 		
 		// Get division bracket
 		$divider = $divisionHTML->find('.data-label span', 0)->plaintext;
@@ -244,11 +223,13 @@ class SC2Division {
 			}else {
 				$divisionData['type'] = 'random';	
 			}
+		}else {
+		  $divisionData['type'] = 'random';	
 		}
 		
 		// Get user rank
 		$currentRankNode = $divisionHTML->find('table tr#current-rank', 0);
-		$tempAdjustment = $currentRankNode->find('.banner.', 0) ? 1 : 0;
+		$tempAdjustment = $currentRankNode->find('.banner', 0) ? 1 : 0;
 		$userRank = $currentRankNode->find('td', 1 + $tempAdjustment)->plaintext;
 		preg_match('/\d+/', $userRank, $matches);
 		$userRank = $matches[0];
@@ -274,42 +255,55 @@ class SC2Division {
 			// Set up adjustment
 			$bannerAdjustment = $rankingNode->find('.banner', 0) ? 1 : 0;
 			
-			// Get joined date
-			$joinedDate = $rankingNode->find('td', 0 + $bannerAdjustment)->getAttribute('data-tooltip');
-			$oneRank['joinedDate'] = SC2Utils::joinedDateToTimeStamp($joinedDate, $this->contentURL);
-			//$oneRank['joinedDate'] = date('j/n/Y', $oneRank['joinedDate']); // Testing
-			
-			// Get rank
-			$rank = $rankingNode->find('td', 1 + $bannerAdjustment)->plaintext;
-			preg_match('/(\d+)/', $rank, $matches);
-			$rank = $matches[1];
-			$oneRank['rank'] = GeneralUtils::parseInt($rank);
-			
-			// Get prev rank
-			$nameNode = $rankingNode->find('td', 2 + $bannerAdjustment);
-			$tooltipDiv = $nameNode->find('a', 0)->getAttribute('data-tooltip');
-			$fullwords = $nameNode->find("$tooltipDiv", 0)->plaintext;
-			$prevWords = $nameNode->find('strong', 0)->plaintext;
-			$nextWords = $nameNode->find('strong', 1)->plaintext;
-			$startpos = strpos($fullwords, $prevWords) + strlen($prevWords);
-			$endpos = strpos($fullwords, $nextWords);
-			$prevRank = substr($fullwords, $startpos, ($endpos - $startpos));
-			$oneRank['prevRank'] = GeneralUtils::parseInt($prevRank);
-			
-			// Get points
-			$points = $rankingNode->find('td', 2 + $bannerAdjustment + $bracketAdjustment)->plaintext;
-			$oneRank['points'] = GeneralUtils::parseInt($points);
-			
-			// Get wins
-			$wins = $rankingNode->find('td', 3 + $bannerAdjustment + $bracketAdjustment)->plaintext;
-			$oneRank['wins'] = GeneralUtils::parseInt($wins);
-			
-			// Get losses if exists
-			$lossesNode = $rankingNode->find('td', 4 + $bannerAdjustment + $bracketAdjustment);
-			if ( $lossesNode ) {
-				$losses = $lossesNode->plaintext;
-				$oneRank['losses'] = GeneralUtils::parseInt($losses);
+			$playerDivision = array();
+			{
+			  // Get joined date
+  			$joinedDate = $rankingNode->find('td', 0 + $bannerAdjustment)->getAttribute('data-tooltip');
+  			$playerDivision['joinedDate'] = SC2Utils::joinedDateToTimeStamp($joinedDate, $this->options['url']);
+        // $playerDivision['joinedDate'] = GeneralUtils::timeStampToDate($playerDivision['joinedDate']);
+
+  			// Get rank
+  			$rank = $rankingNode->find('td', 1 + $bannerAdjustment)->plaintext;
+  			preg_match('/(\d+)/', $rank, $matches);
+  			$rank = $matches[1];
+  			$playerDivision['rank'] = GeneralUtils::parseInt($rank);
+
+  			// Get prev rank
+  			$nameNode = $rankingNode->find('td', 2 + $bannerAdjustment);
+  			$tooltipDiv = $nameNode->find('a', 0)->getAttribute('data-tooltip');
+  			$fullwords = $nameNode->find("$tooltipDiv", 0)->plaintext;
+  			$prevWords = $nameNode->find('strong', 0)->plaintext;
+  			$nextWords = $nameNode->find('strong', 1)->plaintext;
+  			$startpos = strpos($fullwords, $prevWords) + strlen($prevWords);
+  			$endpos = strpos($fullwords, $nextWords);
+  			$prevRank = substr($fullwords, $startpos, ($endpos - $startpos));
+  			$playerDivision['prevRank'] = GeneralUtils::parseInt($prevRank);
+
+  			// Get points
+  			$points = $rankingNode->find('td', 2 + $bannerAdjustment + $bracketAdjustment)->plaintext;
+  			$playerDivision['points'] = GeneralUtils::parseInt($points);
+
+  			// Get wins
+  			$wins = $rankingNode->find('td', 3 + $bannerAdjustment + $bracketAdjustment)->plaintext;
+  			$wins = GeneralUtils::parseInt($wins);
+  			$playerDivision['wins'] = $wins;
+
+  			// Get losses if exists
+  			$lossesNode = $rankingNode->find('td', 4 + $bannerAdjustment + $bracketAdjustment);
+  			if ( $lossesNode ) {
+  				$losses = GeneralUtils::parseInt($lossesNode->plaintext);
+  				$playerDivision['losses'] = $losses;
+
+  				$total = $losses + $wins;
+  				if ( $total > 0 ) {
+  				  $playerDivision['winRatio'] = (float)($wins / $total);
+  				}
+  			} 
 			}
+			
+			// Set player division
+			$oneRank['division'] = $playerDivision;
+			$oneRank['rank'] = $playerDivision['rank'];
 			
 			// Get characters - name and link and estimated bnet link
 			$players = array();
@@ -346,8 +340,8 @@ class SC2Division {
 			$rankings[] = $oneRank;
 			
 		}
-		$divisionData['rankings'] = $rankings;
-		
+		$divisionData['ranks'] = $rankings;
+    
 		return $divisionData;
 	}
 	
@@ -358,7 +352,7 @@ class SC2Division {
 	protected function getRanksDivisionInfo()
 	{	
 		// Get data
-		$divisionHTML = str_get_html($this->content);
+		$divisionHTML = str_get_html($this->options['content']);
 		$divisionData = array();
 		
 		// Get division name
@@ -385,6 +379,8 @@ class SC2Division {
 			$headerRow = $divisionHTML->find('table tr', 0);
 			$numChars = count($headerRow->find('.character'));
 			$divisionData['type'] = ($numChars > 1) ? 'team' : 'random';
+		}else {
+		  $divisionData['type'] = 'random';
 		}
 		
 		// Get division rankings
@@ -454,17 +450,8 @@ class SC2Division {
 			
 			$rankings[] = $oneRank;	
 		}
-		$divisionData['rankings'] = $rankings;
 		
-		return $divisionData;
-	}
-	
-	/**
-	 * Quick function to add something to be printed
-	 */
-	public function addThingsToPrint($things)
-	{
-		$this->dataToPrint .= $things;	
+		return $rankings;
 	}
 }
 

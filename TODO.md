@@ -22,3 +22,7 @@
 - Return total pages/count for every paging enabled request (rankings, search, feeds, divisions)
 
 - Add korean bnet to feeds parser
+
+- Add in parser for achievements list
+
+- Caching for custom RANKS divisions
