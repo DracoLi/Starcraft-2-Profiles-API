@@ -343,9 +343,7 @@ class SC2Player {
 			$mostPlayedRaceKey = $seasonStats->find('.module-body', 0)->getAttribute('class');
 			$startpos = strpos($mostPlayedRaceKey, 'snapshot-') + strlen('snapshot-');
 			$mostPlayedRaceKey = trim(substr($mostPlayedRaceKey, $startpos));
-			$jsonArray['mostPlayedRaceString'] = $mostPlayedRace;
-			$jsonArray['mostPlayedRaceKey'] = $mostPlayedRaceKey;
-			
+			$jsonArray['mostPlayedRace'] = $mostPlayedRaceKey;
 		}
 		
 		// Career stats
@@ -379,12 +377,11 @@ class SC2Player {
   		  $endpos = strpos($soloString, $leagueWords);
   		  $timesAchieved = substr($soloString, $startpos, $endpos - $startpos);
   		  $timesAchieved = GeneralUtils::parseInt($timesAchieved);
-  		  $jsonArray['bestSoloTimesAchieved'] = $timesAchieved;
-
-  		  // Team current league
-  		  $startpos = $endpos + strlen($leagueWords);
-  		  $soloTeamLeague = trim(substr($soloString, $startpos));
-  		  $jsonArray['currentSoloLeagueString'] = $soloTeamLeague;
+  		  if ( $timesAchieved === FALSE) {
+  		    $jsonArray['bestSoloTimesAchieved'] = 1;
+  		  }else {
+  		    $jsonArray['bestSoloTimesAchieved'] = $timesAchieved;
+  		  }
 		  }
 		  
 		  
@@ -414,12 +411,11 @@ class SC2Player {
   		  $endpos = strpos($teamString, $leagueWords);
   		  $timesAchieved = substr($teamString, $startpos, $endpos - $startpos);
   		  $timesAchieved = GeneralUtils::parseInt($timesAchieved);
-  		  $jsonArray['bestTeamTimesAchieved'] = $timesAchieved;
-
-  		  // Team current league
-  		  $startpos = $endpos + strlen($leagueWords);
-  		  $currentTeamLeague = trim(substr($teamString, $startpos));
-  		  $jsonArray['currentTeamLeagueString'] = $currentTeamLeague;
+  		  if ( $timesAchieved === FALSE) {
+  		    $jsonArray['bestTeamTimesAchieved'] = 1;
+  		  }else {
+  		    $jsonArray['bestTeamTimesAchieved'] = $timesAchieved;
+  		  }
 		  }
 		  
 		  // Campaign
