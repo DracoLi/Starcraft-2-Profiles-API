@@ -367,18 +367,12 @@ class SC2Player {
 		  $soloLeague = substr($bestSoloLeague, $startpos);
 		  $endpos = strpos($soloLeague, 'badge-') - 1;
 		  $soloLeagueKey = trim( substr($soloLeague, 0, $endpos) );
-		  $jsonArray['bestSoloLeagueKey'] = $soloLeagueKey;
+		  $jsonArray['bestSoloLeague'] = $soloLeagueKey;
 		  
 		  if ( $soloLeagueKey !== 'none' )
 		  {
 		    $badgeRank = GeneralUtils::parseInt($bestSoloLeague);
 		    $jsonArray['bestSoloBadgeImageRank'] = $badgeRank;
-
-  		  // Team league string
-  		  $startpos = strpos($soloString, $careerWords) + strlen($careerWords);
-  		  $endpos = strpos($soloString, $timesWords);
-  		  $soloLeagueValue = trim(substr($soloString, $startpos, $endpos - $startpos));
-  		  $jsonArray['bestSoloLeagueString'] = $soloLeagueValue;
 
   		  // Team times achieved
   		  $startpos = $endpos + strlen($timesWords);
@@ -409,17 +403,11 @@ class SC2Player {
 		  $teamLeague = substr($bestTeamLeague, $startpos);
 		  $endpos = strpos($teamLeague, 'badge-') - 1;
 		  $teamLeagueKey = trim( substr($teamLeague, 0, $endpos) );
-		  $jsonArray['bestTeamLeagueKey'] = $teamLeagueKey;
+		  $jsonArray['bestTeamLeague'] = $teamLeagueKey;
 		  if ( $teamLeagueKey !== "none" )
 		  {
 		    $badgeRank = GeneralUtils::parseInt($bestTeamLeague);
   		  $jsonArray['bestTeamBadgeImageRank'] = $badgeRank;
-
-  		  // Team league string
-  		  $startpos = strpos($teamString, $careerWords) + strlen($careerWords);
-  		  $endpos = strpos($teamString, $timesWords);
-  		  $teamLeagueValue = trim(substr($teamString, $startpos, $endpos - $startpos));
-  		  $jsonArray['bestTeamLeagueString'] = $teamLeagueValue;
 
   		  // Team times achieved
   		  $startpos = $endpos + strlen($timesWords);

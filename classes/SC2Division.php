@@ -62,6 +62,120 @@ class SC2Division {
 	  
 	  return $divisions;
 	}
+	
+	/**
+	 * Parse information from the division showcase page
+	 */
+	public function getDivisionShowcase()
+	{
+	  $divisions = $this->parseShowcaseDivisions();
+	  
+	  return $divisions;
+	}
+	
+	private function parseShowcaseDivisions()
+	{
+	  // Get data to be used
+		$divisionsHTML = str_get_html($this->options['content']);
+		$divisions = array();
+		
+		$leagueBaseURL = $this->options['url'];
+		$regionBaseURL = GeneralUtils::getBaseURL($leagueBaseURL);
+		
+		$divisionNodes = $divisionsHTML->find('#ladder-spotlight .spotlight');
+		foreach ( $divisionNodes as $divisionNode ) {
+		  // Get data container
+			$oneDivision = array();
+			
+			// Division league
+			$league = $divisionNode->find('.emblem span', 0)->getAttribute('class');
+			$startpos = strpos($league, 'badge-') + strlen('badge-');
+			$endpos = strrpos($league, 'badge-');
+			$league = substr($league, $startpos, $endpos - $startpos);
+			$league = trim($league);
+			
+			// Skip empties
+			if ( $league === "none" ) {
+			  continue;
+			}
+			
+			$oneDivision['league'] = $league;
+			
+			// Division bracket
+			$bracket = $divisionNode->find('.league strong', 0)->plaintext;
+			$bracket = GeneralUtils::parseInt($bracket);
+			$oneDivision['bracket'] = $bracket;
+			
+			// Division players
+			$playerNodes = $divisionNode->find('.players li a');
+			$players = array();
+			foreach ( $playerNodes as $playerNode ) {
+			  $onePlayer = array();
+			  
+			  // Player race
+			  $race = $playerNode->getAttribute('class');
+			  $startpos = strpos($race, 'race-') + strlen('race-');
+			  $race = trim( substr($race, $startpos) );
+			  $onePlayer['race'] = $race;
+			  
+			  // Player name
+			  $name = $playerNode->plaintext;
+			  $name = trim($name);
+			  $onePlayer['name'] = $name;
+			  
+			  // Player bnetURL
+			  $bnetURL = trim( $playerNode->getAttribute('href') );
+			  $bnetURL = $regionBaseURL . $bnetURL;
+			  $onePlayer['bnetURL'] = $bnetURL;
+			  
+			  // Player ranksURL
+			  $onePlayer['ranksURL'] = SC2Utils::estimateRanksLink($bnetURL);
+			  
+			  $players[] = $onePlayer;
+			}
+			$oneDivision['players'] = $players;
+			
+			// Division type
+			if ( count($players) > 1 ) {
+			  $oneDivision['type'] = 'team';
+			}else {
+			  $oneDivision['type'] = 'random';
+			}
+			
+			// Division URL
+			$divisionURL = $divisionNode->find('.emblem', 0)->getAttribute('href');
+			$endpos = strpos($divisionURL, '#');
+			$divisionURL = substr($divisionURL, 0, $endpos);
+			$divisionURL = $leagueBaseURL . $divisionURL;
+			$oneDivision['bnetURL'] = $divisionURL;
+			
+			// Division rank
+			$divisionString = $divisionNode->find('.division', 0)->plaintext;
+			$divisionStats = $divisionNode->find('.division span', 0)->plaintext;
+			$endpos = strpos($divisionString, $divisionStats);
+			$nameAndRank = substr($divisionString, 0, $endpos);
+			$rank = GeneralUtils::parseInt($nameAndRank);
+			$oneDivision['rank'] = $rank;
+			
+			// Division name
+			
+			// Division wins
+			$wins = GeneralUtils::parseInt($divisionStats);
+			$oneDivision['wins'] = $wins;
+			
+			// Division losses
+			$startpos = strpos($divisionStats, '/');
+			if ( $startpos !== FALSE ) {
+			  $losses = substr($divisionStats, $startpos);
+			  $losses = GeneralUtils::parseInt($losses);
+			  $oneDivision['losses'] = $losses;
+			}
+			
+			$divisions[] = $oneDivision;
+		}
+		
+		return $divisions;
+	}
   
   private function parseAllDivisionsPage()
   {
@@ -69,8 +183,8 @@ class SC2Division {
 		$divisionsHTML = str_get_html($this->options['content']);
 		$divisions = array();
 		
+		// Remove the leagues from the baseURL for link construction
 		$leagueBaseURL = $this->options['url'];
-		// Remove the leagues from the baseURL
 		$startpos = strpos($leagueBaseURL, '/leagues');
 		$leagueBaseURL = substr($leagueBaseURL, 0, $startpos);
 		
