@@ -46,16 +46,10 @@ if ( $isAchievementURL ) {
   $resultData = $sc2Achievements->getAllAchievementLinks();
 }
 
-if ( $options['type'] == 'html' )
-{
-  $data = "<pre>" . print_r($jsonData, TRUE) . "</pre>";
-  $data = RestUtils::getHTTPHeader('Testing') . $data . RestUtils::getHTTPFooter(); 
-  RestUtils::sendResponse(200, $data);
- $sc2Achievements->displayArray();
-}
-else if ( $options['type'] == 'json' )
-{
-  RestUtils::sendResponse(200, json_encode($resultData), '', 'application/json');
+if ( $options['type'] == 'html' ) {
+  GeneralUtils::printObject( $resultData );
+}else if ( $options['type'] == 'json' ) {
+  GeneralUtils::printJSON( json_encode($resultData) );
 }
 
 ?>

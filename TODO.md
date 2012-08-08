@@ -17,12 +17,16 @@
 
 - <s>Rewrite bnet profile parser</s>
 
+- <s>Return total pages/count for every paging enabled request (rankings, search, feeds, divisions)</s>
+
+- <s>Add in parser for achievements list - scratched</s>
+
+- <s>Caching for custom RANKS divisions</s>
+
+- Add korean/china bnet to feeds parser
+
 - Add support for custom divisions in our own server.
 
-- Return total pages/count for every paging enabled request (rankings, search, feeds, divisions)
+- Achievements showcase parser
 
-- Add korean bnet to feeds parser
-
-- Add in parser for achievements list
-
-- Caching for custom RANKS divisions
+- Write a simple worker command that periodically updates ranks & custom divisions cache.

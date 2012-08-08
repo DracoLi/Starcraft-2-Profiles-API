@@ -25,11 +25,9 @@ $sc2division = new SC2CustomDivision($options);
 $divisionData = $sc2division->getDivisionData();
 
 if ( $options['type'] == 'html' ) {
-  $fullContent = RestUtils::getHTTPHeader('Testing') . "<pre>" . 
-                print_r($divisionData, TRUE) .  "</pre>" . RestUtils::getHTTPFooter(); 
-	RestUtils::sendResponse(200, $fullContent);
+  GeneralUtils::printObject( $divisionData );
 }else if ( $options['type'] == 'json' ) {
-	RestUtils::sendResponse(200, $divisionData, '', 'application/json');
+  GeneralUtils::printJSON( json_encode($divisionData) );
 }
 
 ?>

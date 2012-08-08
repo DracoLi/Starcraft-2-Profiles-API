@@ -14,9 +14,7 @@ require_once('../helpers/URLConnect.php');
  */
 class SC2CustomDivision {
 
-	private $jsonData;
 	private $options;
-	private $dataToPrint;
 	
 	/**
 	 * Initializes the SC2Division by assigning the content to parse. Then perfrom the parse.
@@ -43,7 +41,7 @@ class SC2CustomDivision {
     $offset = $this->options['offset'];
     $amount = $this->options['amount'];
     
-    $customDivisions = json_decode( file_get_contents($this->getCustomDivisionSaveFilePath()) );
+    $customDivisions = json_decode( file_get_contents($this->getCachePath()) );
     $targetDivision = NULL;
     foreach ( $customDivisions as $customDivision ) {
       if ( $customDivision->url === $divURL ) {
@@ -59,7 +57,7 @@ class SC2CustomDivision {
     }
     
     $targetDivision->ranks = $ranks;
-		return json_encode($targetDivision);
+		return $targetDivision;
   }
   
   /**
@@ -82,20 +80,7 @@ class SC2CustomDivision {
       return NULL;
     }
     
-		return json_encode($result);
-	}
-	
-	/**
-	 * Print out the json data in array format
-	 * @return void
-	 */
-	public function displayArray()
-	{
-		$this->addThingsToPrint("<h2><a href=\"". $this->contentURL . "\">" . $this->contentURL . "</a></h2>");
-		$this->addThingsToPrint('<pre>' . print_r(json_decode($this->getJsonData()), TRUE) . '</pre>');
-		
-		$fullContent = RestUtils::getHTTPHeader('Testing') . $this->dataToPrint . RestUtils::getHTTPFooter(); 
-		RestUtils::sendResponse(200, $fullContent);
+		return $result;
 	}
 	
 	/**
@@ -124,7 +109,7 @@ class SC2CustomDivision {
 	  }// End one custom division
 	  
 	  // Save all our updated custom divisions to file
-	  file_put_contents($this->getCustomDivisionSaveFilePath(), json_encode($customDivisions));
+	  file_put_contents($this->getCachePath(), json_encode($customDivisions));
 	}
 	
 	/**
@@ -272,16 +257,6 @@ class SC2CustomDivision {
 	}
 	
 	/**
-	 * Return the file path for the custom division saved data
-	 * @return String the file path
-	 */
-	private function getCustomDivisionSaveFilePath()
-	{
-	  return GeneralUtils::serverBasePath() . DIRECTORY_SEPARATOR . 
-			'assets' . DIRECTORY_SEPARATOR . 'custom-divisions-data.json';
-	}
-	
-	/**
 	 * Retrieves our custom divisions from the assets folder
 	 * @return Array The custom divisions we made
 	 */
@@ -291,13 +266,13 @@ class SC2CustomDivision {
 			'assets' . DIRECTORY_SEPARATOR . 'custom-divisions.json';
 	  return json_decode(file_get_contents($fullPath));
 	}
-	
-	/**
-	 * Quick function to add something to be printed
-	 */
-	public function addThingsToPrint($things)
+  
+	protected function getCachePath()
 	{
-		$this->dataToPrint .= $things;	
+		$fullPath = GeneralUtils::serverBasePath() . DIRECTORY_SEPARATOR . 
+			'cache' . DIRECTORY_SEPARATOR . 'custom-divisions' . DIRECTORY_SEPARATOR . 
+			'custom-divisions.json';
+		return $fullPath;
 	}
 }
 

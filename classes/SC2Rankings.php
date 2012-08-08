@@ -539,7 +539,8 @@ class SC2Rankings {
 	protected function getCachePath($region = NULL)
 	{
 		$fullPath = GeneralUtils::serverBasePath() . DIRECTORY_SEPARATOR . 
-			'cache' . DIRECTORY_SEPARATOR . $this->getIdentifierForRequest($region) . '.json';
+			'cache' . DIRECTORY_SEPARATOR . 'ranks' . DIRECTORY_SEPARATOR . 
+			$this->getIdentifierForRequest($region) . '.json';
 		return $fullPath;
 	}
 	
