@@ -243,15 +243,15 @@ class SC2History {
 			$oneHistory['type'] = trim($type);
 			
 			// Get map outcome string
-			$resultNode = $historyNode->find('td', 3);
-			$resultString = $resultNode->find('span', 0)->plaintext;
-			$oneHistory['outcomeString'] = trim($resultString);
+      $resultNode = $historyNode->find('td', 3);
+      // $resultString = $resultNode->find('span', 0)->plaintext;
+      // $oneHistory['outcomeString'] = trim($resultString);
 			
 			// Get map outcome key
 			$outcomeClass = $resultNode->find('span', 0)->getAttribute('class');
 			$startpos = strpos($outcomeClass, "-");
 			$outcomeKey = substr($outcomeClass, $startpos + 1);
-			$oneHistory['outcomeKey'] =  trim($outcomeKey);
+			$oneHistory['outcome'] =  trim($outcomeKey);
 			
 			// Get map points if exists
 			$pointsNode = $resultNode->find('span', 1);

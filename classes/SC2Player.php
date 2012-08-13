@@ -124,8 +124,8 @@ class SC2Player {
 		$jsonArray['historyURL'] = $historyURL;
 		
 		// Get achivement points
-		$achivementPoints = $playerHTML->find('.profile .achievements span', 0)->plaintext;
-		$jsonArray['achivementPoints'] = GeneralUtils::parseInt($achivementPoints);
+		$achievementPoints = $playerHTML->find('.profile .achievements span', 0)->plaintext;
+		$jsonArray['achievementPoints'] = GeneralUtils::parseInt($achievementPoints);
 		
 		// Get division data now
 		$divisions = array();
@@ -305,10 +305,10 @@ class SC2Player {
 		$jsonArray['historyURL'] = $bnetURL . "matches";
 		
 		// Save ladder's url
-		$jsonArray['leaguesURL'] = $bnetURL . "ladder/leagues";
+		$jsonArray['divisionsURL'] = $bnetURL . "ladder/leagues";
 		
 		// Save ladder's showcase url
-		$jsonArray['leaguesShowcaseURL'] = $bnetURL . "ladder/";
+		$jsonArray['divisionsShowcaseURL'] = $bnetURL . "ladder/";
 		
 		// Save achievements urls
 		$achieve = new SC2Achievements(NULL, $jsonArray['bnetURL']);
@@ -319,8 +319,8 @@ class SC2Player {
 		$jsonArray['region'] = SC2Utils::playerRegionFromBnetURL($jsonArray['bnetURL']);
 		
 		// Get achivement points
-		$achivementPoints = $playerHTML->find('#profile-header h3', 0)->plaintext;
-		$jsonArray['achivementPoints'] = GeneralUtils::parseInt($achivementPoints);
+		$achievementPoints = $playerHTML->find('#profile-header h3', 0)->plaintext;
+		$jsonArray['achievementPoints'] = GeneralUtils::parseInt($achievementPoints);
 		
 		// Season stats
 		{
@@ -336,14 +336,14 @@ class SC2Player {
 			
 			// Total career games
 			$careerGames = $seasonStats->find('.stat-block h2', 2)->plaintext;
-			$jsonArray['careerGames'] = GeneralUtils::parseInt($careerGames);
+			$jsonArray['totalGames'] = GeneralUtils::parseInt($careerGames);
 			
 			// Most played race
 			$mostPlayedRace = $seasonStats->find('.stat-block h2', 3)->plaintext;
 			$mostPlayedRaceKey = $seasonStats->find('.module-body', 0)->getAttribute('class');
 			$startpos = strpos($mostPlayedRaceKey, 'snapshot-') + strlen('snapshot-');
 			$mostPlayedRaceKey = trim(substr($mostPlayedRaceKey, $startpos));
-			$jsonArray['mostPlayedRace'] = $mostPlayedRaceKey;
+			$jsonArray['race'] = $mostPlayedRaceKey;
 		}
 		
 		// Career stats
@@ -365,12 +365,12 @@ class SC2Player {
 		  $soloLeague = substr($bestSoloLeague, $startpos);
 		  $endpos = strpos($soloLeague, 'badge-') - 1;
 		  $soloLeagueKey = trim( substr($soloLeague, 0, $endpos) );
-		  $jsonArray['bestSoloLeague'] = $soloLeagueKey;
+		  $jsonArray['soloLeague'] = $soloLeagueKey;
 		  
 		  if ( $soloLeagueKey !== 'none' )
 		  {
 		    $badgeRank = GeneralUtils::parseInt($bestSoloLeague);
-		    $jsonArray['bestSoloBadgeImageRank'] = $badgeRank;
+		    $jsonArray['soloLeagueImageRank'] = $badgeRank;
 
   		  // Team times achieved
   		  $startpos = $endpos + strlen($timesWords);
@@ -378,9 +378,9 @@ class SC2Player {
   		  $timesAchieved = substr($soloString, $startpos, $endpos - $startpos);
   		  $timesAchieved = GeneralUtils::parseInt($timesAchieved);
   		  if ( $timesAchieved === FALSE) {
-  		    $jsonArray['bestSoloTimesAchieved'] = 1;
+  		    $jsonArray['soloTimesAchieved'] = 1;
   		  }else {
-  		    $jsonArray['bestSoloTimesAchieved'] = $timesAchieved;
+  		    $jsonArray['soloTimesAchieved'] = $timesAchieved;
   		  }
 		  }
 		  
@@ -400,11 +400,11 @@ class SC2Player {
 		  $teamLeague = substr($bestTeamLeague, $startpos);
 		  $endpos = strpos($teamLeague, 'badge-') - 1;
 		  $teamLeagueKey = trim( substr($teamLeague, 0, $endpos) );
-		  $jsonArray['bestTeamLeague'] = $teamLeagueKey;
+		  $jsonArray['teamLeague'] = $teamLeagueKey;
 		  if ( $teamLeagueKey !== "none" )
 		  {
 		    $badgeRank = GeneralUtils::parseInt($bestTeamLeague);
-  		  $jsonArray['bestTeamBadgeImageRank'] = $badgeRank;
+  		  $jsonArray['teamLeagueImageRank'] = $badgeRank;
 
   		  // Team times achieved
   		  $startpos = $endpos + strlen($timesWords);
@@ -412,10 +412,12 @@ class SC2Player {
   		  $timesAchieved = substr($teamString, $startpos, $endpos - $startpos);
   		  $timesAchieved = GeneralUtils::parseInt($timesAchieved);
   		  if ( $timesAchieved === FALSE) {
-  		    $jsonArray['bestTeamTimesAchieved'] = 1;
+  		    $jsonArray['teamTimesAchieved'] = 1;
   		  }else {
-  		    $jsonArray['bestTeamTimesAchieved'] = $timesAchieved;
+  		    $jsonArray['teamTimesAchieved'] = $timesAchieved;
   		  }
+  		  
+  		  
 		  }
 		  
 		  // Campaign
@@ -423,9 +425,7 @@ class SC2Player {
 		  $badgeClass = $badgeNode->find('.badge', 0)->getAttribute('class');
 		  $startpos = strpos($badgeClass, 'badge') + strlen('badge');
 		  $campaignKey = trim(substr($badgeClass, $startpos));
-		  $campaignString = trim($badgeNode->find('.rank', 0)->plaintext);
-		  $jsonArray['campaignKey'] = $campaignKey;
-		  $jsonArray['campaignString'] = $campaignString;
+		  $jsonArray['campaign'] = $campaignKey;
 		}
 		
 		// // Add user's divisions

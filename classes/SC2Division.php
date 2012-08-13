@@ -39,9 +39,7 @@ class SC2Division {
 			$results = $this->getRanksDivisionInfo();
 		}
 		
-		$amount = $this->options['amount'];
-		$offset = $this->options['offset'];
-		return GeneralUtils::prepareForPaging($results, $offset, $amount, 'divisionInfo', 'ranks');
+		return $results;
   }
 	
 	/**
@@ -94,7 +92,7 @@ class SC2Division {
 			$league = substr($league, $startpos, $endpos - $startpos);
 			$league = trim($league);
 			
-			// Skip empties
+			// Skip empty divisions
 			if ( $league === "none" ) {
 			  continue;
 			}
@@ -188,6 +186,9 @@ class SC2Division {
 		$startpos = strpos($leagueBaseURL, '/leagues');
 		$leagueBaseURL = substr($leagueBaseURL, 0, $startpos);
 		
+		// Get current player name
+		$currentPlayer = $divisionsHTML->find('#profile-header h2 a', 0)->plaintext;
+		
 		$divisionNodes = $divisionsHTML->find('#profile-menu li');
 		for ( $i = 2; $i < count($divisionNodes); $i++ ) {
 			
@@ -228,25 +229,34 @@ class SC2Division {
 				$onePlayer = array();
 				
 				// Get player name, we only have this data from bnet
-				if ( $totalPlayers == 1 ) {
-					$onePlayer['name'] = $allNames;
-					$players[] = $onePlayer;
-					break;
-				}
-				
+        // if ( $totalPlayers == 1 ) {
+        //  break;
+        // }
+        // 
 				if ( $j == 0 ) {
-					$startpos = 0;
 					$endpos = strpos($allNames, ',');
-					$onePlayer['name'] = trim(substr($allNames, $startpos, $endpos));
+					
+					// Accout for ones with no ','
+					if ( $endpos !== FALSE) {
+					  $playerName = trim(substr($allNames, 0, $endpos));
+					}else {
+					  $playerName = trim(substr($allNames, 0));
+					}
+					
 				}else if ( $j + 1 == $totalPlayers ) {
-					$onePlayer['name'] = trim(substr($allNames, $endpos + 1));
+					$playerName = trim(substr($allNames, $endpos + 1));
 				}else {
 					$startpos = $endpos + 1;
 					$endpos = strpos($allNames, ',', $startpos);
-					$onePlayer['name'] = trim(substr($allNames, $startpos, ($endpos - $startpos)));
+					$playerName = trim(substr($allNames, $startpos, ($endpos - $startpos)));
 				}
 				
-				$players[] = $onePlayer;
+        // if ( $playerName !== $currentPlayer ) {
+        //   $onePlayer['name'] = $playerName; 
+        //   $players[] = $onePlayer;
+        // }
+				$onePlayer['name'] = $playerName; 
+			  $players[] = $onePlayer;
 			}
 			$oneDivision['players'] = $players;
 			
@@ -268,7 +278,7 @@ class SC2Division {
 			$bnetLink = $leagueBaseURL . '/' . $bnetLink;
 			$startpos = strpos($bnetLink, '#');
 			$bnetLink = substr($bnetLink, 0, $startpos);
-			$oneDivision['bnetLink'] = $bnetLink;
+			$oneDivision['bnetURL'] = $bnetLink;
 			
 			$divisions[] = $oneDivision;
 		}
@@ -347,7 +357,7 @@ class SC2Division {
 		$userRank = $currentRankNode->find('td', 1 + $tempAdjustment)->plaintext;
 		preg_match('/\d+/', $userRank, $matches);
 		$userRank = $matches[0];
-		$divisionData['userRank'] = GeneralUtils::parseInt($userRank);
+		$divisionData['rank'] = GeneralUtils::parseInt($userRank);
 		
 		// Setup league adjustment
 		$bracketAdjustment = ($divisionData['type'] == 'team') ? $divisionData['bracket'] : 1;

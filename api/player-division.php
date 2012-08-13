@@ -9,7 +9,6 @@ require_once('../helpers/helper-fns.php');
 // Default Params, this is used when cettain options not specified
 $defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/2439371/1/coLMinigun/ladder/leagues',
 					   'offset' => 0,
-					   'amount' => 30,
 					   'type' => 'json');
 					   
 // Get basic parameters
