@@ -183,8 +183,6 @@ class SC2Division {
 		
 		// Remove the leagues from the baseURL for link construction
 		$leagueBaseURL = $this->options['url'];
-		$startpos = strpos($leagueBaseURL, '/leagues');
-		$leagueBaseURL = substr($leagueBaseURL, 0, $startpos);
 		
 		// Get current player name
 		$currentPlayer = $divisionsHTML->find('#profile-header h2 a', 0)->plaintext;
@@ -275,10 +273,10 @@ class SC2Division {
 			
 			// Get division url
 			$bnetLink = $divisionNode->getAttribute('href');
-			$bnetLink = $leagueBaseURL . '/' . $bnetLink;
-			$startpos = strpos($bnetLink, '#');
-			$bnetLink = substr($bnetLink, 0, $startpos);
-			$oneDivision['bnetURL'] = $bnetLink;
+      // $bnetLink = $leagueBaseURL . '/' . $bnetLink;
+      $startpos = strpos($bnetLink, '#');
+      $bnetLink = substr($bnetLink, 0, $startpos);
+			$oneDivision['bnetURLString'] = "/ladder/" . $bnetLink;
 			
 			$divisions[] = $oneDivision;
 		}
@@ -299,14 +297,18 @@ class SC2Division {
 		$divisionData = array();
 		$userBaseURL = GeneralUtils::getBaseURL($this->options['url']);
 		
+		// Get season
+		$fullString = $divisionHTML->find('.data-label', 0)->plaintext;
+		$season = GeneralUtils::parseInt($fullString);
+		$divisionData['season'] = $season;
+		
 		// Get division name
 		$nameNode = $divisionHTML->find('.data-label span', 1);
 		if ( $nameNode ) {
 			$name = $nameNode->plaintext;
 			$divisionData['name'] = trim($name);
 		}else {
-			// Currently only Grandmaster doesn't have a division name
-			$divisionData['name'] = "Grandmaster";	
+			// Currently only Grandmaster doesn't have a division nam
 		}
 		
 		// Get division league
@@ -325,8 +327,8 @@ class SC2Division {
 		$startpos = strpos($fullwords, $divider) + strlen($divider);
 		$fullwords = substr($fullwords, $startpos);
 		preg_match('/[0-4]/', $fullwords, $matches);
-		$bracket = $matches[0];
-		$divisionData['bracket'] = GeneralUtils::parseInt($bracket);
+		$bracket = GeneralUtils::parseInt($matches[0]);
+		$divisionData['bracket'] = $bracket;
 		
 		// Try to get division type - random or team - for bracket > 1
 		if ( $divisionData['bracket'] > 1 ) {
@@ -351,13 +353,17 @@ class SC2Division {
 		  $divisionData['type'] = 'random';	
 		}
 		
-		// Get user rank
+		// Get user rank		
 		$currentRankNode = $divisionHTML->find('table tr#current-rank', 0);
 		$tempAdjustment = $currentRankNode->find('.banner', 0) ? 1 : 0;
 		$userRank = $currentRankNode->find('td', 1 + $tempAdjustment)->plaintext;
 		preg_match('/\d+/', $userRank, $matches);
 		$userRank = $matches[0];
 		$divisionData['rank'] = GeneralUtils::parseInt($userRank);
+		
+		// User points
+		$currentPoints = $currentRankNode->find('td', 2 + $tempAdjustment + $bracket)->plaintext;
+		$divisionData['points'] = GeneralUtils::parseInt($currentPoints);
 		
 		// Setup league adjustment
 		$bracketAdjustment = ($divisionData['type'] == 'team') ? $divisionData['bracket'] : 1;

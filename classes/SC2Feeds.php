@@ -69,10 +69,23 @@ class SC2Feeds {
 	{
 	  // Form a list of all our feeds
 	  $ourFeeds = $this->getOurFeeds();
+    $includedOurFeeds = array();
+    $foundPromoted = false;
+    $promotedFeed = NULL;
+    for ($i=0; $i < count($ourFeeds); $i++) { 
+        $feed = $ourFeeds[0];
+        if ( $feed->promoted && !$foundPromoted ) {
+          $promotedFeed = $feed;
+          $foundPromoted = true;
+        }else {
+          $includedOurFeeds[] = $feed;
+        }
+    }
+
 	  $sc2Feeds = $this->getCachedFeedsForRegion($this->options['region']);
-	  $totalFeeds = $ourFeeds;
+	  $totalFeeds = $includedOurFeeds;
 	  if ( $sc2Feeds !== NULL ) {
-	    $totalFeeds = array_merge($ourFeeds, $sc2Feeds);
+	    $totalFeeds = array_merge($totalFeeds, $sc2Feeds);
 	  }
 	  
 	  // Sort all of our feeds
@@ -85,10 +98,16 @@ class SC2Feeds {
 	  $amount = $this->options['amount'];
 	  $neededFeeds = array_slice($totalFeeds, $offset ,$amount);
 	  
+    // Get the most recent promoted feed and add it to our list
+    if ($offset == 0) {
+      $tempArray = array();
+      $tempArray[0] = $promotedFeed;
+      $neededFeeds = array_merge($tempArray, $neededFeeds);
+    }
+
 	  // Add in the total amount of feeds to have
 	  $jsonResult = array();
 	  $jsonResult['total'] = count($totalFeeds);
-	  $jsonResult['returnedAmount'] = count($neededFeeds);
 	  $jsonResult['feeds'] = $neededFeeds;
 	  
 		return json_encode($jsonResult);

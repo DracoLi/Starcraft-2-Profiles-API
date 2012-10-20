@@ -263,8 +263,6 @@ class SC2Player {
 		// Add user's divisions
 		$jsonArray['divisions'] = $divisions;
 		
-		
-    
 		// Finish sc2ranks profile for player
 		return $jsonArray;
 	}
