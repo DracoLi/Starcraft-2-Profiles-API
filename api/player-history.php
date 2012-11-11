@@ -63,7 +63,7 @@ $sc2history = new SC2History($options['content'], $options['url']);
 if ( $options['type'] == 'html' ) {
  $sc2history->displayArray();
 }else if ( $options['type'] == 'json' ){
- RestUtils::sendResponse(200, $sc2history->getJsonData(), '', 'application/json');
+ GeneralUtils::printJSON($sc2history->getJsonData());
 }
 
 ?>

@@ -35,11 +35,11 @@ class SC2Rankings {
 		}else {
 			// Get new json data from sc2ranks directly - since we caching results, its okay!
 			$resultsArray = $this->getRankingsData();
-			if ( $resultsArray == NULL && file_exists($requestCache) ) {
+			if ( $resultsArray === NULL && file_exists($requestCache) ) {
 				// If we didnt find rankings, use cached (prob due to error connection to bnet)
 				$this->jsonData = file_get_contents($requestCache);
-			}else if( $resultsArray != NULL ) {
-			  // Save our rankings data (sc2ranks or bnet GM)
+			}else {
+			  	// Save our rankings data (sc2ranks or bnet GM)
 				$this->jsonData = json_encode($resultsArray);
 				file_put_contents($requestCache, $this->jsonData, LOCK_EX);	
 			}
@@ -111,7 +111,7 @@ class SC2Rankings {
 		}
 		
 		if ( count($rankingsArray) <= 0 ) {
-			return NULL;	
+			return array();
 		}
 		return $rankingsArray;
 	}
@@ -150,8 +150,12 @@ class SC2Rankings {
 		// Get rankings
 		$rankingsArray = array();
 		$rawRankings = $contents->find('table tr');
-		if ( count($rawRankings) <= 2 ) return NULL;
+		if ( count($rawRankings) <= 2 ) {
+			// No results found
+			return array();
+		}
 		$currentRow = 0;
+
 		foreach ( $rawRankings as $oneRankNode ) {
 			
 			// Skip the table header
@@ -250,7 +254,7 @@ class SC2Rankings {
 			
 			$rankingsArray[] = $oneRank;
 		}
-		
+
 		// NOTE: Bnet GM rankings does not need to be sorted - we take data from BNET for granted
 		return $rankingsArray;
 	}
@@ -274,8 +278,8 @@ class SC2Rankings {
 	  set_time_limit(60*10);
 
 	  // Get file path of all our GM data
-		$cn = $this->getCachePath('cn');
-		$krtw = $this->getCachePath('krtw');
+	  $cn = $this->getCachePath('cn');
+	  $krtw = $this->getCachePath('krtw');
 	  $eu = $this->getCachePath('eu');
 	  $na = $this->getCachePath('am');
 	  $sea = $this->getCachePath('sea');

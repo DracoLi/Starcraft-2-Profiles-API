@@ -21,7 +21,7 @@ if ( ( !isset($options['content'] ) || $options['content'] == '' ) &&
 	// Constants
 	$defaultParams = array('region' => 'global',
 						   'name' => 'Draco',
-						   'type' => 'exact',
+						   'type' => 'starts', // contains, starts, end, exact
 						   'page' => '1');
 	
 	// Get basic parameters

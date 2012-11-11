@@ -144,6 +144,11 @@ class SC2Division {
 			$divisionURL = $divisionNode->find('.emblem', 0)->getAttribute('href');
 			$endpos = strpos($divisionURL, '#');
 			$divisionURL = substr($divisionURL, 0, $endpos);
+
+			// Bnet URLString
+			$oneDivision['bnetURLString'] = "/ladder/" . $divisionURL;
+
+			// Full bnet url
 			$divisionURL = $leagueBaseURL . $divisionURL;
 			$oneDivision['bnetURL'] = $divisionURL;
 			
@@ -273,11 +278,10 @@ class SC2Division {
 			
 			// Get division url
 			$bnetLink = $divisionNode->getAttribute('href');
-      // $bnetLink = $leagueBaseURL . '/' . $bnetLink;
-      $startpos = strpos($bnetLink, '#');
-      $bnetLink = substr($bnetLink, 0, $startpos);
+      		$startpos = strpos($bnetLink, '#');
+      		$bnetLink = substr($bnetLink, 0, $startpos);
 			$oneDivision['bnetURLString'] = "/ladder/" . $bnetLink;
-			
+			// $oneDivision['bnetURL'] = $leagueBaseURL . '/' . $bnetLink;
 			$divisions[] = $oneDivision;
 		}
 		
@@ -364,7 +368,19 @@ class SC2Division {
 		// User points
 		$currentPoints = $currentRankNode->find('td', 2 + $tempAdjustment + $bracket)->plaintext;
 		$divisionData['points'] = GeneralUtils::parseInt($currentPoints);
-		
+
+		// User Wins
+		$currentWins = $currentRankNode->find('td', 3 + $tempAdjustment + $bracket)->plaintext;
+  		$currentWins = GeneralUtils::parseInt($currentWins);
+  		$divisionData['wins'] = $currentWins;
+
+		// User Losses
+		$currentLossesNode = $currentRankNode->find('td', 4 + $tempAdjustment + $bracket);
+		if ( $currentLossesNode ) {
+			$losses = GeneralUtils::parseInt($currentLossesNode->plaintext);
+			$divisionData['losses'] = $losses;
+		}
+
 		// Setup league adjustment
 		$bracketAdjustment = ($divisionData['type'] == 'team') ? $divisionData['bracket'] : 1;
 		
@@ -388,48 +404,48 @@ class SC2Division {
 			$playerDivision = array();
 			{
 			  // Get joined date
-  			$joinedDate = $rankingNode->find('td', 0 + $bannerAdjustment)->getAttribute('data-tooltip');
-  			$playerDivision['joinedDate'] = SC2Utils::joinedDateToTimeStamp($joinedDate, $this->options['url']);
-        // $playerDivision['joinedDate'] = GeneralUtils::timeStampToDate($playerDivision['joinedDate']);
+	  			$joinedDate = $rankingNode->find('td', 0 + $bannerAdjustment)->getAttribute('data-tooltip');
+	  			$playerDivision['joinedDate'] = SC2Utils::joinedDateToTimeStamp($joinedDate, $this->options['url']);
+	        // $playerDivision['joinedDate'] = GeneralUtils::timeStampToDate($playerDivision['joinedDate']);
 
-  			// Get rank
-  			$rank = $rankingNode->find('td', 1 + $bannerAdjustment)->plaintext;
-  			preg_match('/(\d+)/', $rank, $matches);
-  			$rank = $matches[1];
-  			$playerDivision['rank'] = GeneralUtils::parseInt($rank);
+	  			// Get rank
+	  			$rank = $rankingNode->find('td', 1 + $bannerAdjustment)->plaintext;
+	  			preg_match('/(\d+)/', $rank, $matches);
+	  			$rank = $matches[1];
+	  			$playerDivision['rank'] = GeneralUtils::parseInt($rank);
 
-  			// Get prev rank
-  			$nameNode = $rankingNode->find('td', 2 + $bannerAdjustment);
-  			$tooltipDiv = $nameNode->find('a', 0)->getAttribute('data-tooltip');
-  			$fullwords = $nameNode->find("$tooltipDiv", 0)->plaintext;
-  			$prevWords = $nameNode->find('strong', 0)->plaintext;
-  			$nextWords = $nameNode->find('strong', 1)->plaintext;
-  			$startpos = strpos($fullwords, $prevWords) + strlen($prevWords);
-  			$endpos = strpos($fullwords, $nextWords);
-  			$prevRank = substr($fullwords, $startpos, ($endpos - $startpos));
-  			$playerDivision['prevRank'] = GeneralUtils::parseInt($prevRank);
+	  			// Get prev rank
+	  			$nameNode = $rankingNode->find('td', 2 + $bannerAdjustment);
+	  			$tooltipDiv = $nameNode->find('a', 0)->getAttribute('data-tooltip');
+	  			$fullwords = $nameNode->find("$tooltipDiv", 0)->plaintext;
+	  			$prevWords = $nameNode->find('strong', 0)->plaintext;
+	  			$nextWords = $nameNode->find('strong', 1)->plaintext;
+	  			$startpos = strpos($fullwords, $prevWords) + strlen($prevWords);
+	  			$endpos = strpos($fullwords, $nextWords);
+	  			$prevRank = substr($fullwords, $startpos, ($endpos - $startpos));
+	  			$playerDivision['prevRank'] = GeneralUtils::parseInt($prevRank);
 
-  			// Get points
-  			$points = $rankingNode->find('td', 2 + $bannerAdjustment + $bracketAdjustment)->plaintext;
-  			$playerDivision['points'] = GeneralUtils::parseInt($points);
+	  			// Get points
+	  			$points = $rankingNode->find('td', 2 + $bannerAdjustment + $bracketAdjustment)->plaintext;
+	  			$playerDivision['points'] = GeneralUtils::parseInt($points);
 
-  			// Get wins
-  			$wins = $rankingNode->find('td', 3 + $bannerAdjustment + $bracketAdjustment)->plaintext;
-  			$wins = GeneralUtils::parseInt($wins);
-  			$playerDivision['wins'] = $wins;
+	  			// Get wins
+	  			$wins = $rankingNode->find('td', 3 + $bannerAdjustment + $bracketAdjustment)->plaintext;
+	  			$wins = GeneralUtils::parseInt($wins);
+	  			$playerDivision['wins'] = $wins;
 
-  			// Get losses if exists
-  			$lossesNode = $rankingNode->find('td', 4 + $bannerAdjustment + $bracketAdjustment);
-  			if ( $lossesNode ) {
-  				$losses = GeneralUtils::parseInt($lossesNode->plaintext);
-  				$playerDivision['losses'] = $losses;
+	  			// Get losses if exists
+	  			$lossesNode = $rankingNode->find('td', 4 + $bannerAdjustment + $bracketAdjustment);
+	  			if ( $lossesNode ) {
+	  				$losses = GeneralUtils::parseInt($lossesNode->plaintext);
+	  				$playerDivision['losses'] = $losses;
 
-  				$total = $losses + $wins;
-  				if ( $total > 0 ) {
-  				  $playerDivision['winRatio'] = (float)($wins / $total);
-  				}
+	  				$total = $losses + $wins;
+	  				if ( $total > 0 ) {
+	  				  $playerDivision['winRatio'] = (float)($wins / $total);
+	  				}
+	  			}
   			} 
-			}
 			
 			// Set player division
 			$oneRank['division'] = $playerDivision;
