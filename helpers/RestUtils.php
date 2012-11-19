@@ -14,7 +14,7 @@ class RestUtils
 
 		// If no erros, we print w/e needed or nothing
 		if ( $status == 200 ) {
-			header("Content-Length", strlen($body));
+			header("Content-Length: " . strlen($body));
 			echo $body;
 			exit;
 		}
@@ -50,7 +50,7 @@ class RestUtils
 			$content = $content + '<h2>' . $status . ' : ' . RestUtils::getStatusCodeMessage($status) . '</h2><hr />';
 			$content = $content + $body;
 			$content = $content + RestUtils::getHTTPFooter();
-			header("Content-Length", strlen($content));
+			header("Content-Length: " . strlen($body));
 			exit;
 		}
 		
@@ -60,7 +60,7 @@ class RestUtils
 								<p>' . $message . '</p><hr />';
 			$content = $content + $body;
 			$content = $content + RestUtils::getHTTPFooter();
-			header("Content-Length", strlen($content));
+			header("Content-Length: " . strlen($body));
 			exit;
 		}
 	}
