@@ -11,9 +11,10 @@ class RestUtils
 		
 		// set the content type
 		header('Content-type: ' . $content_type . '; charset=utf-8');
-		
+
 		// If no erros, we print w/e needed or nothing
 		if ( $status == 200 ) {
+			header("Content-Length", strlen($body));
 			echo $body;
 			exit;
 		}
@@ -45,18 +46,21 @@ class RestUtils
 		}
 			
 		if ( $status != 200 && $body != '' ) {
-			echo RestUtils::getHTTPHeader($header);
-			echo '<h2>' . $status . ' : ' . RestUtils::getStatusCodeMessage($status) . '</h2><hr />';
-			echo $body;
-			echo RestUtils::getHTTPFooter();
+			$content = RestUtils::getHTTPHeader($header);
+			$content = $content + '<h2>' . $status . ' : ' . RestUtils::getStatusCodeMessage($status) . '</h2><hr />';
+			$content = $content + $body;
+			$content = $content + RestUtils::getHTTPFooter();
+			header("Content-Length", strlen($content));
 			exit;
 		}
 		
 		if ( $status != 200 && $body == '' ) {
-			echo RestUtils::getHTTPHeader($header);
-			echo '<h2>' . RestUtils::getStatusCodeMessage($status) . '</h2>
+			$content = RestUtils::getHTTPHeader($header);
+			$content = $content + '<h2>' . RestUtils::getStatusCodeMessage($status) . '</h2>
 								<p>' . $message . '</p><hr />';
-			echo RestUtils::getHTTPFooter();
+			$content = $content + $body;
+			$content = $content + RestUtils::getHTTPFooter();
+			header("Content-Length", strlen($content));
 			exit;
 		}
 	}
