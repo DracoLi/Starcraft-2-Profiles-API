@@ -231,11 +231,6 @@ class SC2Division {
 				
 				$onePlayer = array();
 				
-				// Get player name, we only have this data from bnet
-        // if ( $totalPlayers == 1 ) {
-        //  break;
-        // }
-        // 
 				if ( $j == 0 ) {
 					$endpos = strpos($allNames, ',');
 					
@@ -254,10 +249,6 @@ class SC2Division {
 					$playerName = trim(substr($allNames, $startpos, ($endpos - $startpos)));
 				}
 				
-        // if ( $playerName !== $currentPlayer ) {
-        //   $onePlayer['name'] = $playerName; 
-        //   $players[] = $onePlayer;
-        // }
 				$onePlayer['name'] = $playerName; 
 			  $players[] = $onePlayer;
 			}
@@ -294,7 +285,7 @@ class SC2Division {
 	 */
 	private function getBNETDivisionInfo()
 	{
-	  set_time_limit(60*2);
+	 	set_time_limit(60*2);
 	  
 		// Get data
 		$divisionHTML = str_get_html($this->options['content']);
@@ -469,11 +460,13 @@ class SC2Division {
 				$name = $charNode->find('a', 0)->plaintext;
 				$onePlayer['name'] = trim($name);
 				
+				// Set player region
+				$onePlayer['region'] = $divisionData['region'];
+
 				// Get char bnet link
 				$bnetURL = $charNode->find('a', 0)->getAttribute('href');
 				$bnetURL = $userBaseURL . $bnetURL;
 				$bnetURL = GeneralUtils::encodeURL($bnetURL);
-				
 				$onePlayer['bnetURL'] = $bnetURL;
 				
 				// Estimate char ranks link
