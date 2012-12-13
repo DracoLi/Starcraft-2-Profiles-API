@@ -5,4 +5,6 @@
 *.tm_build_errors
 
 # Ignore our cache
-cache/*
+cache/custom-divisions/*
+cache/feeds/*
+cache/ranks/*
