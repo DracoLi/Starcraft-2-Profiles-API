@@ -14,7 +14,7 @@ class SC2Rankings {
 	private $dataToPrint;
 	
 	
-	const CACHEAMOUNT = 200;		  // Total number of rankings we wil store. Thus users cannot request more than this.
+	const CACHEAMOUNT = 200;		// Total number of rankings we wil store. Thus users cannot request more than this.
 	const MAX_CACHE_TIME = 1800; 	// Every 30 min update rankings
 	const OUR_RANKINGS_PER_PAGE = 30;
 	const SC2RANKS_RANKS_PER_PAGE = 100;
@@ -29,10 +29,14 @@ class SC2Rankings {
 		// Only use cache if it exists, 
 		// and we specify to use cache, 
 		// and when cached time is less than our max cache time
-		if ( file_exists($requestCache) && $this->options['update'] == 'false') {// &&
-			  //(time() - filemtime($requestCache)) < SC2Rankings::MAX_CACHE_TIME) {
+		if ( file_exists($requestCache) && 
+			 (time() - filemtime($requestCache)) < SC2Rankings::MAX_CACHE_TIME && 
+			 $this->options['update'] != 'true')
+		{
 			$this->jsonData = file_get_contents($requestCache);
-		}else {
+		}
+		else
+		{
 			// Get new json data from sc2ranks directly - since we caching results, its okay!
 			$resultsArray = $this->getRankingsData();
 			if ( $resultsArray === NULL && file_exists($requestCache) ) {

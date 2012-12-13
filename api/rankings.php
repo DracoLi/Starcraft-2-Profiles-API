@@ -13,7 +13,7 @@ $defaultParams = array('region' => 'global',
 					   'bracket' => '1',
 					   'race' => 'all',
 					   'offset' => 0,
-					   'update' => 'true',
+					   'update' => 'false',
 					   'type' => 'json',
 					   'amount' => 20);
 
