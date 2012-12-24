@@ -348,6 +348,9 @@ class SC2Division {
 		  $divisionData['type'] = 'random';	
 		}
 		
+		// Setup league adjustment
+		$bracketAdjustment = ($divisionData['type'] == 'team') ? $divisionData['bracket'] : 1;
+		
 		// Get user rank		
 		$currentRankNode = $divisionHTML->find('table tr#current-rank', 0);
 		$tempAdjustment = $currentRankNode->find('.banner', 0) ? 1 : 0;
@@ -357,24 +360,21 @@ class SC2Division {
 		$divisionData['rank'] = GeneralUtils::parseInt($userRank);
 		
 		// User points
-		$currentPoints = $currentRankNode->find('td', 2 + $tempAdjustment + $bracket)->plaintext;
+		$currentPoints = $currentRankNode->find('td', 2 + $tempAdjustment + $bracketAdjustment)->plaintext;
 		$divisionData['points'] = GeneralUtils::parseInt($currentPoints);
 
 		// User Wins
-		$currentWins = $currentRankNode->find('td', 3 + $tempAdjustment + $bracket)->plaintext;
+		$currentWins = $currentRankNode->find('td', 3 + $tempAdjustment + $bracketAdjustment)->plaintext;
   		$currentWins = GeneralUtils::parseInt($currentWins);
   		$divisionData['wins'] = $currentWins;
 
 		// User Losses
-		$currentLossesNode = $currentRankNode->find('td', 4 + $tempAdjustment + $bracket);
+		$currentLossesNode = $currentRankNode->find('td', 4 + $tempAdjustment + $bracketAdjustment);
 		if ( $currentLossesNode ) {
 			$losses = GeneralUtils::parseInt($currentLossesNode->plaintext);
 			$divisionData['losses'] = $losses;
 		}
 
-		// Setup league adjustment
-		$bracketAdjustment = ($divisionData['type'] == 'team') ? $divisionData['bracket'] : 1;
-		
 		// Get division rankings
 		$currentRow = 0;
 		$rankings = array();
