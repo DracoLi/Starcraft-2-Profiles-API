@@ -26,9 +26,10 @@ class SC2Rankings {
 		// Check if we have the requested data in cache
 		$requestCache = $this->getCachePath();
 		
-		// Only use cache if it exists, 
-		// and we specify to use cache, 
-		// and when cached time is less than our max cache time
+		// Only use cache if three conditions are met.
+		// 1. If the rankings exist
+		// 2. Update is not true in passed params
+		// 3. If existing cache exsits, the cached time is less than our max cache time
 		if ( file_exists($requestCache) && 
 			 (time() - filemtime($requestCache)) < SC2Rankings::MAX_CACHE_TIME && 
 			 $this->options['update'] != 'true')
