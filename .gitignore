@@ -6,3 +6,5 @@
 
 # Ignore our cache
 cache/*
+
+*.mp4
