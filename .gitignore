@@ -5,6 +5,8 @@
 *.tm_build_errors
 
 # Ignore our cache
-cache/*
+cache/ranks/*
+cache/feeds/*
+cache/custom-divisions/*
 
 *.mp4
