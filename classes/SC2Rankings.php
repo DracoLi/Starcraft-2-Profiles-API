@@ -368,7 +368,6 @@ class SC2Rankings {
 		
 		$contents = $urlconnect->getContent();
 		$rawRankings = str_get_html($contents)->find('.tblrow');
-		
 
 		// Get the provided region
 		foreach ( $rawRankings as $oneRanking )
@@ -386,6 +385,11 @@ class SC2Rankings {
 					// Create a new player
 					$onePlayer = array();
 					
+					// This to handle some display errors that happened on SC2Ranks
+					if (!$playerNode->find('img', 0)) {
+						continue;
+					}
+
 					// Get race
 					$onePlayer['race'] = strtolower($playerNode->find('img', 0)->getAttribute('class'));
 					
