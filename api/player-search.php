@@ -14,6 +14,7 @@ require_once('../helpers/RestUtils.php');
 $options = array();
 $options['content'] = $_REQUEST['content'];
 $options['url'] = $_REQUEST['url'];
+$options['league'] = $_REQUEST['league'];  // bronze, silver, gold, platinum, diamond, master, grandmaster
 
 // If no content, we try to return target url by looking at other params
 if ( ( !isset($options['content'] ) || $options['content'] == '' ) && 
@@ -57,7 +58,7 @@ if ( isset($options['url']) && strlen($options['url']) > 0
 $defaultParams = array('type' => 'json', 'content' => '');
 $options = GeneralUtils::getDefaults($defaultParams, $options);
 
-$sc2search = new SC2Search($options['content']);
+$sc2search = new SC2Search($options['content'], $options['league']);
 if ( $options['type'] == 'html' ) {
   $sc2search->addThingsToPrint("<h2><a href=\"$targetURL\">$targetURL</a></h2>");
   $sc2search->displayArray();

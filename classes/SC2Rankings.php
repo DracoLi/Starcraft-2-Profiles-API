@@ -67,17 +67,31 @@ class SC2Rankings {
 
 		// Get the array to need to send
 		$jsonArray = json_decode($targetJsonData);
-    
+    	
+    	// For grandmaster with a specific race we have to sort thorugh it manually
+	  	$race = $this->options['race'];
+		if ( $this->options['league'] == 'grandmaster' && $race != 'all' )
+		{
+			// If not all race then only extract the players with the specified race
+			$adjustedArray = array();
+			foreach ( $jsonArray as $oneRank ) {
+				if ( $oneRank['players'][0]['race'] == $race ) {
+					$adjustedArray[] = $oneRank;
+				}
+			}
+			$jsonArray = $adjustedArray;
+		}
+
 		// Grab our json data within the user specified range
 		$offset = $this->options['offset'];
 		$amount = $this->options['amount'];
 		$ranksData = array_slice($jsonArray, $offset ,$amount);
-		
+			
 		// Add in the total amount of feeds to have
-	  $jsonResult = array();
-	  $jsonResult['total'] = count($jsonArray);
-	  $jsonResult['returnedAmount'] = count($ranksData);
-	  $jsonResult['ranks'] = $ranksData;
+	  	$jsonResult = array();
+	  	$jsonResult['total'] = count($jsonArray);
+	  	$jsonResult['returnedAmount'] = count($ranksData);
+	  	$jsonResult['ranks'] = $ranksData;
 	  
 		return json_encode($jsonResult);
 	}
@@ -130,10 +144,10 @@ class SC2Rankings {
 		// Map region to targeted GM link
 		$gmMapper = array('na' => 'http://us.battle.net/sc2/en/ladder/grandmaster',
 		                  'am' => 'http://us.battle.net/sc2/en/ladder/grandmaster',
-						          'eu' => 'http://eu.battle.net/sc2/en/ladder/grandmaster',
-        						  'sea' => 'http://sea.battle.net/sc2/en/ladder/grandmaster',
-        						  'krtw' => 'http://kr.battle.net/sc2/ko/ladder/grandmaster',
-        						  'cn' => 'http://www.battlenet.com.cn/sc2/zh/ladder/grandmaster');
+						  'eu' => 'http://eu.battle.net/sc2/en/ladder/grandmaster',
+        				  'sea' => 'http://sea.battle.net/sc2/en/ladder/grandmaster',
+        				  'krtw' => 'http://kr.battle.net/sc2/ko/ladder/grandmaster',
+        			      'cn' => 'http://www.battlenet.com.cn/sc2/zh/ladder/grandmaster');
 
 		$targetURL = GeneralUtils::mapKeyToValue($gmMapper, $region);
 		$this->addThingsToPrint("<h2><a href=\"$targetURL\">$targetURL</a></h2><br />");

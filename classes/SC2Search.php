@@ -19,17 +19,20 @@ class SC2Search {
 	private $content;
 	private $dataToPrint;
 	
-	public function __construct($content)
+	public function __construct($content, $league)
 	{
 		if ( isset($content) ) {
 			$this->content = $content;	
+			$this->league = $league;
 		}else {
 			// We got nothing - this also ends page
 			RestUtils::sendResponse(204);
 			return;
 		}
 		
-		$this->jsonData = json_encode($this->getRanksSearchResults());
+		$rankResults = $this->getRanksSearchResults();
+		$rankResults['players'] = $this->adjustForLeague($rankResults['players']);
+		$this->jsonData = json_encode($rankResults);
 	}
 	
 	public function getJsonData()
@@ -238,6 +241,46 @@ class SC2Search {
 		return $jsonArray;
 	}
 
+	protected function adjustForLeague($players)
+	{
+		$league = $this->league;
+		if ( !$league || $league == 'none' ) {
+			return $players;
+		}
+
+		# Rearrange of array according to leauge compatibility
+		$bucketMapper = array(
+			'grandmaster' => 1,
+			'master' => 2,
+			'diamond' => 3,
+			'platinum' => 4,
+			'gold' => 5,
+			'silver' => 6,
+			'bronze' => 7
+		);
+		$searchBuckets = array();
+		$targetPoints = $bucketMapper[$league];
+		for ( $i=0; $i < count($players); $i++ )
+		{ 
+			$oneResult = $players[$i];
+			$playerLeague = $oneResult['divisions']['league'];
+			$resultPoints = $bucketMapper[$playerLeague];
+			$compatibility = abs($targetPoints - $resultPoints);
+			$searchBuckets[$compatibility][] = $oneResult;
+		}
+		
+		# Combine our buckets
+		$adjustedArray = array();
+		for ( $i=0; $i < 6; $i++ ) { 
+			if ( array_key_exists($i, $searchBuckets) ) {
+				foreach ( $searchBuckets[$i] as $searchResult ) {
+					$adjustedArray[] = $searchResult;
+				}
+			}
+		}
+		
+		return $adjustedArray;
+	}
 	/**
 	 * Quick function to add something to be printed
 	 */

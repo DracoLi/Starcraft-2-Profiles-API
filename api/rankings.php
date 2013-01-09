@@ -20,7 +20,7 @@ $defaultParams = array('region' => 'global',
 // Get basic parameters
 $options = array();
 $options['region'] = $_GET['region'];	// global, na, sea, eu, krtw, cn
-$options['league'] = $_GET['league'];	// bronze, silver, gold, platinum, master, grandmaster
+$options['league'] = $_GET['league'];	// bronze, silver, gold, platinum, diamond, master, grandmaster
 $options['bracket'] = $_GET['bracket'];	// 1, 2t, 2r, 3t, 3r, 4t, 4r
 $options['race'] = $_GET['race'];		// all, zerg, protess, terran, random
 
