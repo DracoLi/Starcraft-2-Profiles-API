@@ -322,25 +322,36 @@ class SC2Player {
 		
 		// Season stats
 		{
-			$seasonStats = $playerHTML->find('#season-snapshot', 0);
+			$seasonStats = $playerHTML->find('.career-stats-box', 0);
 			
+			$terranWins = $seasonStats->find('.career-stat-block .stat-value', 0)->plaintext;
+			$terranWins = GeneralUtils::parseInt($terranWins);
+			$zergWins = $seasonStats->find('.career-stat-block .stat-value', 1)->plaintext;
+			$zergWins = GeneralUtils::parseInt($zergWins);
+			$protossWins = $seasonStats->find('.career-stat-block .stat-value', 2)->plaintext;
+			$protossWins = GeneralUtils::parseInt($protossWins);
+
 			// Get games tis season
-			$gamesThisSeason = $seasonStats->find('.stat-block h2', 0)->plaintext;
+			$gamesThisSeason = $seasonStats->find('.career-stat-block .stat-value', 4)->plaintext;
 			$jsonArray['gamesThisSeason'] = GeneralUtils::parseInt($gamesThisSeason);
 				
 			// Most played mode
-			$mostPlayedMode = $seasonStats->find('.stat-block h2', 1)->plaintext;
-			$jsonArray['mostPlayedMode'] = GeneralUtils::parseInt($mostPlayedMode);
+			// $mostPlayedMode = $seasonStats->find('.stat-block h2', 1)->plaintext;
+			$jsonArray['mostPlayedMode'] = '1';
 			
 			// Total career games
-			$careerGames = $seasonStats->find('.stat-block h2', 2)->plaintext;
+			$careerGames = $seasonStats->find('.career-stat-block .stat-value', 3)->plaintext;
 			$jsonArray['totalGames'] = GeneralUtils::parseInt($careerGames);
 			
 			// Most played race
-			$mostPlayedRace = $seasonStats->find('.stat-block h2', 3)->plaintext;
-			$mostPlayedRaceKey = $seasonStats->find('.module-body', 0)->getAttribute('class');
-			$startpos = strpos($mostPlayedRaceKey, 'snapshot-') + strlen('snapshot-');
-			$mostPlayedRaceKey = trim(substr($mostPlayedRaceKey, $startpos));
+			$mostPlayedRaceKey = NULL;
+			if ($terranWins >= $zergWins && $terranWins >= $protossWins) {
+				$mostPlayedRaceKey = 'terran';
+			}else if ($zergWins >= $terranWins && $zergWins >= $protossWins) {
+				$mostPlayedRaceKey = 'zerg';
+			}else if ($protossWins >= $terranWins && $protossWins >= $zergWins) {
+				$mostPlayedRaceKey = 'protoss';
+			}
 			$jsonArray['race'] = $mostPlayedRaceKey;
 		}
 		
@@ -401,29 +412,27 @@ class SC2Player {
 		  $jsonArray['teamLeague'] = $teamLeagueKey;
 		  if ( $teamLeagueKey !== "none" )
 		  {
-		    $badgeRank = GeneralUtils::parseInt($bestTeamLeague);
-  		  $jsonArray['teamLeagueImageRank'] = $badgeRank;
+		  	$badgeRank = GeneralUtils::parseInt($bestTeamLeague);
+  		  	$jsonArray['teamLeagueImageRank'] = $badgeRank;
 
-  		  // Team times achieved
-  		  $startpos = $endpos + strlen($timesWords);
-  		  $endpos = strpos($teamString, $leagueWords);
-  		  $timesAchieved = substr($teamString, $startpos, $endpos - $startpos);
-  		  $timesAchieved = GeneralUtils::parseInt($timesAchieved);
-  		  if ( $timesAchieved === FALSE) {
-  		    $jsonArray['teamTimesAchieved'] = 1;
-  		  }else {
-  		    $jsonArray['teamTimesAchieved'] = $timesAchieved;
-  		  }
-  		  
-  		  
+  		  	// Team times achieved
+  		  	$startpos = $endpos + strlen($timesWords);
+  		  	$endpos = strpos($teamString, $leagueWords);
+  		  	$timesAchieved = substr($teamString, $startpos, $endpos - $startpos);
+  		  	$timesAchieved = GeneralUtils::parseInt($timesAchieved);
+  		  	if ( $timesAchieved === FALSE) {
+  		    	$jsonArray['teamTimesAchieved'] = 1;
+  		  	}else {
+  		    	$jsonArray['teamTimesAchieved'] = $timesAchieved;
+  		  	}
 		  }
 		  
 		  // Campaign
-		  $badgeNode = $careerStats->find('.campaign', 0);
-		  $badgeClass = $badgeNode->find('.badge', 0)->getAttribute('class');
-		  $startpos = strpos($badgeClass, 'badge') + strlen('badge');
-		  $campaignKey = trim(substr($badgeClass, $startpos));
-		  $jsonArray['campaign'] = $campaignKey;
+		  // $badgeNode = $careerStats->find('.campaign', 0);
+		  // $badgeClass = $badgeNode->find('.badge', 0)->getAttribute('class');
+		  // $startpos = strpos($badgeClass, 'badge') + strlen('badge');
+		  // $campaignKey = trim(substr($badgeClass, $startpos));
+		  // $jsonArray['campaign'] = $campaignKey;
 		}
 		
 		// // Add user's divisions

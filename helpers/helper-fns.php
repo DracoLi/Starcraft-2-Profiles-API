@@ -150,7 +150,7 @@ class SC2Utils {
 		// Get image url
 		$startPos = strpos($imageStyle, 'url(\'') + 5;
 		$endPos = strpos($imageStyle, '\')', $startPos);
-		$imageURL = $baseURL . substr($imageStyle, $startPos, ($endPos - $startPos));
+		$imageURL = substr($imageStyle, $startPos, ($endPos - $startPos));
 		$imageData['url'] = $imageURL;
 		
 		// Get image x

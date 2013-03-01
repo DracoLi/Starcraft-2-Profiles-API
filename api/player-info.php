@@ -26,7 +26,7 @@ $defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/2439371/1/c
                        'type' => 'json');
                        
 // Merge user param with default
-$options = GeneralUtils::getDefaults($defaultParams, $options);                     
+$options = GeneralUtils::getDefaults($defaultParams, $options);
                        
 // If development enviroment and no content is provided, we fetch it instead
 if ( !isset($options['content']) || $options['content'] == '' ) {	
