@@ -1,15 +1,9 @@
 [
   {
-    "title": "We rock a lot!",
-    "url": "2012-7-30",
-    "postedDate": "2012-7-30",
-    "content": "This is where we describe why we are so awesome!. This is where we finish off!",
+    "title": "Cannot Load Player Data Error Resolved",
+    "url": "2013-03-08",
+    "postedDate": "2012-3-08",
+    "content": "Error for 'Cannot load player data' has been resolved. This error was caused by Blizzard's update to the StarCraft II online profile formating.",
     "promoted": true
-  },
-  {
-    "title": "ipusm ads got to go",
-    "url": "2012-7-31",
-    "postedDate": "2012-7-31",
-    "content": "Another piece of boring content to go!"
   }
 ]
