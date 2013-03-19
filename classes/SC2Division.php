@@ -343,22 +343,6 @@ class SC2Division {
 			}else {
 				$divisionData['type'] = 'random';	
 			}
-			// $totalColumns = count($firstRow->find('td'));
-			// $bannerAdjustment = $firstRow->find('.banner', 0) ? 1 : 0;
-			// if ( $divisionData['league'] == 'grandmaster' || $divisionData['league'] == 'master' )
-			// {
-			// 	$minColumns = 6 + $bannerAdjustment;
-			// }else {
-			// 	$minColumns = 5 + $bannerAdjustment;
-			// }
-			// print "<br>total columns: " . $totalColumns;
-			// print "<br>minColumns: " . $minColumns;
-			// if ( $totalColumns > $minColumns ) {
-			// 	// This is definately not random
-				
-			// }else {
-			// 	$divisionData['type'] = 'random';	
-			// }
 		}else {
 		  $divisionData['type'] = 'random';	
 		}

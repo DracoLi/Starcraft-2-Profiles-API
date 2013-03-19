@@ -39,7 +39,7 @@ if ( !isset($options['content']) || strlen($options['content']) == 0 ) {
 	$options['content'] = $urlconnect->getContent();
 }
 
-$sc2Achievements = new SC2Achievements($options['content'], $options['url']);
+$sc2Achievements = new SC2Achievements($options['content'], $options['url'], $options['game']);
 
 $resultData = NULL;
 if ( $isAchievementURL ) {
