@@ -20,6 +20,7 @@ class SC2Player {
 	private $content;
 	private $dataToPrint;
 	private $playerURL;
+	private $game;
 	
 	/**
 	 * Initializes the SC2Player by assigning the content to parse and the url of the content. Then perfrom the parse.
@@ -28,11 +29,12 @@ class SC2Player {
 	 * @param $url the url of the content, used to form full links
 	 * @return void
 	 */
-	public function __construct($content, $url = RANKSURL )
+	public function __construct($content, $url = RANKSURL, $game)
 	{
 		if ( isset($content) ) {
 			$this->content = $content;
 			$this->playerURL = $url;
+			$this->game = $game;
 		}else {
 			// We got nothing - this also ends page
 			RestUtils::sendResponse(204);
@@ -123,7 +125,7 @@ class SC2Player {
 		$historyURL = RANKSURL . $playerHTML->find('.profile .maps a', 0)->getAttribute('href');
 		$jsonArray['historyURL'] = $historyURL;
 		
-		// Get achivement points
+		// Get achievement points
 		$achievementPoints = $playerHTML->find('.profile .achievements span', 0)->plaintext;
 		$jsonArray['achievementPoints'] = GeneralUtils::parseInt($achievementPoints);
 		
@@ -309,7 +311,7 @@ class SC2Player {
 		$jsonArray['divisionsShowcaseURL'] = $bnetURL . "ladder/";
 		
 		// Save achievements urls
-		$achieve = new SC2Achievements(NULL, $jsonArray['bnetURL']);
+		$achieve = new SC2Achievements(NULL, $jsonArray['bnetURL'], $this->game);
 		$achievementsArray = $achieve->getAllAchievementLinks();
 		$jsonArray['achievementsURL'] = $achievementsArray;
 		

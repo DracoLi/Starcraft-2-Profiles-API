@@ -14,6 +14,7 @@ $defaultParams = array('region' => 'global',
 					   'race' => 'all',
 					   'offset' => 0,
 					   'update' => 'false',
+                       'game' => 'wol',
 					   'type' => 'json',
 					   'amount' => 20);
 
@@ -23,7 +24,7 @@ $options['region'] = $_GET['region'];	// global, na, sea, eu, krtw, cn
 $options['league'] = $_GET['league'];	// bronze, silver, gold, platinum, diamond, master, grandmaster
 $options['bracket'] = $_GET['bracket'];	// 1, 2t, 2r, 3t, 3r, 4t, 4r
 $options['race'] = $_GET['race'];		// all, zerg, protess, terran, random
-
+$options['game'] = $_GET['game'];       // hots, wol
 $options['update'] = $_GET['update'];
 $options['offset'] = $_GET['offset'];
 $options['amount'] = $_GET['amount'];

@@ -9,11 +9,13 @@ require_once('../helpers/helper-fns.php');
 
 // Default when no params are passed
 $defaultParams = array('url' => 'http://eu.battle.net/sc2/en/profile/12641/2/AlkaduR/ladder/leagues',
-					             'grabFirstDiv' => "true",
-					             'type' => 'json');
+					   'grabFirstDiv' => "true",
+					   'game' => 'wol',
+					   'type' => 'json');
 					             
 // Get basic parameters
 $options = array();
+$options['game'] = $_REQUEST['game'];
 $options['url'] = $_REQUEST['url']; // player's
 $options['grabFirstDiv'] = $_REQUEST['grabFirstDiv'];
 $options['content'] = $_POST['content']; // Content of the ladders/leagues page

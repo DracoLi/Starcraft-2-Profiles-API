@@ -19,27 +19,28 @@ $options['league'] = $_REQUEST['league'];  // bronze, silver, gold, platinum, di
 // If no content, we try to return target url by looking at other params
 if ( ( !isset($options['content'] ) || $options['content'] == '' ) && 
      ( !isset($options['url']) || $options['url'] == '' ) ) {
-	// Constants
-	$defaultParams = array('region' => 'global',
-						   'name' => 'Draco',
-						   'type' => 'starts', // contains, starts, end, exact
-						   'page' => '1');
-	
-	// Get basic parameters
-	$options = array();
-	$options['region'] = $_REQUEST['region'];	// global, na, eu, sea, krtw, cn
-	$options['name'] = $_REQUEST['name'];		// word to search for
-	$options['type'] = $_REQUEST['type'];		// exact, contains, starts
-	$options['page'] = $_REQUEST['page'];		// starting page
-	
-	$options = GeneralUtils::getDefaults($defaultParams, $options);
-	
-	// We need to grab the content with user supplied options
-	$targetURL = SC2Search::getTargetURL($options);
-	
-	// Get URL to use
-	RestUtils::sendResponse(200, $targetURL, '', 'text-plain');
-	exit;
+    // Constants
+    $defaultParams = array('region' => 'global',
+                           'name' => 'Draco',
+                           'type' => 'starts', // contains, starts, end, exact
+                           'page' => '1');
+    
+    // Get basic parameters
+    $options = array();
+    $options['region'] = $_REQUEST['region'];   // global, na, eu, sea, krtw, cn
+    $options['name'] = $_REQUEST['name'];       // word to search for
+    $options['name'] = $_REQUEST['name'];
+    $options['type'] = $_REQUEST['type'];       // exact, contains, starts
+    $options['page'] = $_REQUEST['page'];       // starting page
+    
+    $options = GeneralUtils::getDefaults($defaultParams, $options);
+    
+    // We need to grab the content with user supplied options
+    $targetURL = SC2Search::getTargetURL($options);
+    
+    // Get URL to use
+    RestUtils::sendResponse(200, $targetURL, '', 'text-plain');
+    exit;
 }
 
 // Get the content for the user if an url is provided but no content is
@@ -48,8 +49,8 @@ if ( isset($options['url']) && strlen($options['url']) > 0
   // Get contents for provided url
   $urlconnect = new URLConnect($options['url'], 100, FALSE);
   if ( $urlconnect->getHTTPCode() != 200 ) {
-  	RestUtils::sendResponse($urlconnect->getHTTPCode());
-  	exit;
+    RestUtils::sendResponse($urlconnect->getHTTPCode());
+    exit;
   }
   $options['content'] = $urlconnect->getContent();
 }
@@ -58,11 +59,11 @@ if ( isset($options['url']) && strlen($options['url']) > 0
 $defaultParams = array('type' => 'json', 'content' => '');
 $options = GeneralUtils::getDefaults($defaultParams, $options);
 
-$sc2search = new SC2Search($options['content'], $options['league']);
+$sc2search = new SC2Search($options);
 if ( $options['type'] == 'html' ) {
   $sc2search->addThingsToPrint("<h2><a href=\"$targetURL\">$targetURL</a></h2>");
   $sc2search->displayArray();
 }else if ( $options['type'] == 'json' ){
-  RestUtils::sendResponse(200, $sc2search->getJsonData(), '', 'application/json');
+  GeneralUtils::printJSON($sc2search->parseSearchResultsContent());
 }
 ?>

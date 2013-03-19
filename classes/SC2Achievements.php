@@ -20,6 +20,7 @@ class SC2Achievements {
 	private $jsonData;
 	private $content;
 	private $contentURL;
+	private $game;
 	private $dataToPrint;
 	
 	/**
@@ -29,10 +30,11 @@ class SC2Achievements {
 	 * @param $url The url of the content to be parsed (the achievement url).
 	 * @return void
 	 */
-	public function __construct($content, $url)
+	public function __construct($content, $url, $game)
 	{
-	  $this->content = $content;
+	 	$this->content = $content;
 		$this->contentURL = $url;
+		$this->game = $game;
 	}
 	
 	/**
@@ -42,8 +44,13 @@ class SC2Achievements {
 	 */
 	public function getAllAchievementLinks()
 	{
-	  // Construct an array of achivement sections
-		$data = simplexml_load_file('../assets/achievements.xml');
+	  	// Construct an array of achivement sections
+		if ( $this->game == 'wol' ) {
+			$data = simplexml_load_file('../assets/achievements.xml');
+		}else if ( $this->game == 'hots' ) {
+			$data = simplexml_load_file('../assets/achievements-hots.xml');
+		}
+		
 		$achievementsData = SC2Achievements::parseInnerAchievements($data->children(), $this->contentURL);
 		return $achievementsData;
 	}
@@ -69,7 +76,7 @@ class SC2Achievements {
 			}
 			$allAchievements[] = $oneAchievement;
 		}
-		return $allAchievements;		
+		return $allAchievements;
 	}
 	
 	/**

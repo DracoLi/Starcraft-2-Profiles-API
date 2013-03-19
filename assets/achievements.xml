@@ -5,35 +5,35 @@
 		<content>
 			<oneAchievement>
 				<name>Mara Sara Missions</name>
-				<url>achievements/category/3211277</url>
-			</oneAchievement>
-			<oneAchievement>
-				<name>Colonist Missions</name>
 				<url>achievements/category/3211278</url>
 			</oneAchievement>
 			<oneAchievement>
-				<name>Covert Missions</name>
+				<name>Colonist Missions</name>
 				<url>achievements/category/3211279</url>
 			</oneAchievement>
 			<oneAchievement>
-				<name>Rebellion Missions</name>
+				<name>Covert Missions</name>
 				<url>achievements/category/3211280</url>
 			</oneAchievement>
 			<oneAchievement>
-				<name>Artifact Missions</name>
+				<name>Rebellion Missions</name>
 				<url>achievements/category/3211281</url>
 			</oneAchievement>
 			<oneAchievement>
-				<name>Prophecy Missions</name>
+				<name>Artifact Missions</name>
 				<url>achievements/category/3211282</url>
 			</oneAchievement>
 			<oneAchievement>
-				<name>Final Missions</name>
+				<name>Prophecy Missions</name>
 				<url>achievements/category/3211283</url>
 			</oneAchievement>
 			<oneAchievement>
-				<name>Story Mode</name>
+				<name>Final Missions</name>
 				<url>achievements/category/3211284</url>
+			</oneAchievement>
+			<oneAchievement>
+				<name>Story Mode</name>
+				<url>achievements/category/3211285</url>
 			</oneAchievement>
 		</content>
 	</oneAchievement>
@@ -74,15 +74,15 @@
 			</oneAchievement>
 			<oneAchievement>
 				<name>Economy</name>
-				<url>achievements/category/3211268</url>
-			</oneAchievement>
-			<oneAchievement>
-				<name>Unranked/Ranked</name>
 				<url>achievements/category/3211269</url>
 			</oneAchievement>
 			<oneAchievement>
+				<name>Unranked/Ranked</name>
+				<url>achievements/category/3211270</url>
+			</oneAchievement>
+			<oneAchievement>
 				<name>Melee Combat</name>
-				<url>achievements/category/3211273</url>
+				<url>achievements/category/3211274</url>
 			</oneAchievement>
 		</content>
 	</oneAchievement>

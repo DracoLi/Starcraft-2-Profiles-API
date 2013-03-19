@@ -9,10 +9,12 @@ require_once('../helpers/helper-fns.php');
 
 // Default when no params are passed
 $defaultParams = array('url' => 'http://eu.battle.net/sc2/en/profile/12641/2/AlkaduR/ladder/',
+								'game' => 'wol',
 					             'type' => 'json');
 					             
 // Get basic parameters
 $options = array();
+$options['game'] = $_REQUEST['game'];
 $options['url'] = $_REQUEST['url']; // player's
 $options['content'] = $_POST['content']; // Content of the ladders/leagues page
 

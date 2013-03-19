@@ -20,9 +20,11 @@ require_once('../classes/SC2Player.php');
 $options = array();
 $options['url'] = $_REQUEST['url'];			// player profile url
 $options['content'] = $_REQUEST['content'];	// Content of the page
+$options['game'] = $_REQUEST['game'];       // hots, wol
 $options['type'] = $_REQUEST['type'];	// Type of result
 
 $defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/2439371/1/coLMinigun/',
+                       'game' => 'wol',
                        'type' => 'json');
                        
 // Merge user param with default
@@ -39,7 +41,7 @@ if ( !isset($options['content']) || $options['content'] == '' ) {
 	$options['content'] = $urlconnect->getContent();
 }
 
-$sc2player = new SC2Player($options['content'], $options['url']);
+$sc2player = new SC2Player($options['content'], $options['url'], $options['game']);
 if ( $options['type'] == 'html' ) {
  $sc2player->displayArray();
 }else if ( $options['type'] == 'json' ){

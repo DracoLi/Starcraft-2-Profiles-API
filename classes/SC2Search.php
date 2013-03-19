@@ -15,29 +15,29 @@ require_once('../helpers/URLConnect.php');
  */
 class SC2Search {
 	
-	private $jsonData;
 	private $content;
+	private $league;
+	private $options;
 	private $dataToPrint;
 	
-	public function __construct($content, $league)
+	public function __construct($options)
 	{
-		if ( isset($content) ) {
-			$this->content = $content;	
-			$this->league = $league;
-		}else {
-			// We got nothing - this also ends page
-			RestUtils::sendResponse(204);
-			return;
+		$this->options = $options;
+
+		if ( isset($options['content']) ) {
+			$this->content = $options['content'];
 		}
-		
+
+		if ( isset($options['league']) ) {
+			$this->league = $options['league'];
+		}
+	}
+
+	public function parseSearchResultsContent()
+	{
 		$rankResults = $this->getRanksSearchResults();
 		$rankResults['players'] = $this->adjustForLeague($rankResults['players']);
-		$this->jsonData = json_encode($rankResults);
-	}
-	
-	public function getJsonData()
-	{
-		return $this->jsonData;
+		return json_encode($rankResults);
 	}
 	
 	// Testing
@@ -47,6 +47,27 @@ class SC2Search {
 		
 		$fullContent = RestUtils::getHTTPHeader('Testing') . $this->dataToPrint . RestUtils::getHTTPFooter(); 
 		RestUtils::sendResponse(200, $fullContent);
+	}
+
+	public function getProfileURLResult()
+	{
+		$vars = 'character[url]=' . $this->options['url'];
+		$targetURL = 'http://www.sc2ranks.com/char';
+		$urlconnect = new URLConnect($targetURL, 100, FALSE, True, $vars);
+		if ( $urlconnect->getHTTPCode() != 200 ) {
+			RestUtils::sendResponse($urlconnect->getHTTPCode());
+		 	exit;
+		}
+		$content = $urlconnect->getContent();
+
+		// Get raw data
+		$domHTML = str_get_html($content);
+
+		// Handle when sc2ranks did not return the search table but the results page
+		if ( count($domHTML->find('table.search')) == 0 ) {
+			$result = $this->getRanksSinglePageResult($domHTML);
+			return json_encode($result);
+		}
 	}
 	
 	public static function getTargetURL($options)
@@ -125,8 +146,7 @@ class SC2Search {
 				$wins = $oneResult->find('.wins', 0)->plaintext;
 				$oneDivision['wins'] = GeneralUtils::parseInt($wins);
 				
-				// Get losses
-				if ( $oneDivision['league'] == 'grandmaster' || $oneDivision['league'] == 'master' ) {
+				if ( count($oneResult->find('.losses')) > 0 ) {
 					$losses = $oneResult->find('.losses', 0)->plaintext;
 					$oneDivision['losses'] = GeneralUtils::parseInt($losses);
 					$diviser = $oneDivision['wins'] + $oneDivision['losses'];
@@ -182,6 +202,7 @@ class SC2Search {
 		$firstDivisionNode = $rawResults->find('.leagues', 0);
 
 		$oneDivision = array();
+		if ( count($rawResults->find('.leagues .summary', 0)) > 0 )
 		{
 			// Get region for player
 			$oneDivision['region'] = $onePlayer['region'];

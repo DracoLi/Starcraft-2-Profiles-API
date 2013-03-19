@@ -180,18 +180,19 @@ class SC2Feeds {
    */
   protected function getBnetFeedsForRegion($region)
   {
-    // Handle china feed uniquly
+    // Handle china feed uniquly since parsing is pain
     if ( $region == 'cn' ) {
       // return $this->getBnetFeedsForChina();
       $region = 'na';
     }
     
-    $gmMapper = array('na' => 'http://us.battle.net/sc2/en/',
-		                  'am' => 'http://us.battle.net/sc2/en/',
-						          'eu' => 'http://eu.battle.net/sc2/en/',
-        						  'sea' => 'http://sea.battle.net/sc2/en/',
-        						  'krtw' => 'http://kr.battle.net/sc2/ko/',
-        						  'cn' => 'http://www.battlenet.com.cn/sc2/zh/');
+    # The ?- avoids any promo splash pages
+    $gmMapper = array('na' => 'http://us.battle.net/sc2/en/?-',
+		                  'am' => 'http://us.battle.net/sc2/en/?-',
+						          'eu' => 'http://eu.battle.net/sc2/en/?-',
+        						  'sea' => 'http://sea.battle.net/sc2/en/?-',
+        						  'krtw' => 'http://kr.battle.net/sc2/ko/?-',
+        						  'cn' => 'http://www.battlenet.com.cn/sc2/zh/?-');
     $baseURL = GeneralUtils::mapKeyToValue($gmMapper, $region);
 		$targetURL = $baseURL;
 		$pagesToParse = SC2Feeds::PAGES_TO_PARSE;

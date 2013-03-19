@@ -12,6 +12,7 @@ require_once('../helpers/RestUtils.php');
 $options = array();
 $options['region'] = $_REQUEST['region'];
 $options['offset'] = $_REQUEST['offset'];
+$options['game'] = $_REQUEST['game'];
 $options['amount'] = $_REQUEST['amount'];
 $options['type'] = $_REQUEST['type'];
 $options['update'] = $_REQUEST['update'];
@@ -22,6 +23,7 @@ $defaultParams = array(
     'offset' => '0', 
     'type' => 'json',
     'region' => 'na',
+    'game' => 'hots',
     'update' => 'false'
 );
 $options = GeneralUtils::getDefaults($defaultParams, $options);

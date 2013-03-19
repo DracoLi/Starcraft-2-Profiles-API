@@ -120,10 +120,11 @@ class SC2Rankings {
 		
 		if ( $this->options['league'] == 'grandmaster' ) {		  
 		  $region = $this->options['region'];
+		  $game = $this->options['game'];
 			if ( $region == 'global' ) {
-				$rankingsArray = $this->getCombinedGMRankings();
+				$rankingsArray = $this->getCombinedGMRankings($game);
 			}else {
-				$rankingsArray = $this->getBnetGMRankings($region);
+				$rankingsArray = $this->getBnetGMRankings($game, $region);
 			}
 		}else {
 			$rankingsArray = $this->getRanksRankingsData();	
@@ -135,21 +136,37 @@ class SC2Rankings {
 		return $rankingsArray;
 	}
 	
-	protected function getBnetGMRankings($region = NULL)
+	protected function getBnetGMRankings($game = NULL, $region = NULL)
 	{
 		global $displayRegionMapper;
 		
 		$region = ($region == NULL) ? $this->options['region'] : $region;
+		$game = ($game == NULL) ? $this->options['game'] : $game;
 		
 		// Map region to targeted GM link
-		$gmMapper = array('na' => 'http://us.battle.net/sc2/en/ladder/grandmaster',
-		                  'am' => 'http://us.battle.net/sc2/en/ladder/grandmaster',
-						  'eu' => 'http://eu.battle.net/sc2/en/ladder/grandmaster',
-        				  'sea' => 'http://sea.battle.net/sc2/en/ladder/grandmaster',
-        				  'krtw' => 'http://kr.battle.net/sc2/ko/ladder/grandmaster',
-        			      'cn' => 'http://www.battlenet.com.cn/sc2/zh/ladder/grandmaster');
+		if ( $game == 'wol') {
+			$gmMapper = array('na' => 'http://us.battle.net/sc2/en/ladder/grandmaster/wings-of-liberty',
+		                  'am' => 'http://us.battle.net/sc2/en/ladder/grandmaster/wings-of-liberty',
+						  'eu' => 'http://eu.battle.net/sc2/en/ladder/grandmaster/wings-of-liberty',
+        				  'sea' => 'http://sea.battle.net/sc2/en/ladder/grandmaster/wings-of-liberty',
+        				  'krtw' => 'http://kr.battle.net/sc2/ko/ladder/grandmaster/wings-of-liberty',
+        				  'tw' => 'http://tw.battle.net/sc2/zh/ladder/grandmaster/wings-of-liberty',
+        				  'kr' => 'http://kr.battle.net/sc2/ko/ladder/grandmaster/heart-of-the-swarm',
+        			      'cn' => 'http://www.battlenet.com.cn/sc2/zh/ladder/grandmaster/wings-of-liberty');	
+		}else {
+			$gmMapper = array('na' => 'http://us.battle.net/sc2/en/ladder/grandmaster/heart-of-the-swarm',
+		                  'am' => 'http://us.battle.net/sc2/en/ladder/grandmaster/heart-of-the-swarm',
+						  'eu' => 'http://eu.battle.net/sc2/en/ladder/grandmaster/heart-of-the-swarm',
+        				  'sea' => 'http://sea.battle.net/sc2/en/ladder/grandmaster/heart-of-the-swarm',
+        				  'krtw' => 'http://kr.battle.net/sc2/ko/ladder/grandmaster/heart-of-the-swarm',
+        				  'tw' => 'http://tw.battle.net/sc2/zh/ladder/grandmaster/heart-of-the-swarm',
+        				  'kr' => 'http://kr.battle.net/sc2/ko/ladder/grandmaster/heart-of-the-swarm',
+        			      'cn' => 'http://www.battlenet.com.cn/sc2/zh/ladder/grandmaster/heart-of-the-swarm');
+		}
+		
 
 		$targetURL = GeneralUtils::mapKeyToValue($gmMapper, $region);
+		print $targetURL;
 		$this->addThingsToPrint("<h2><a href=\"$targetURL\">$targetURL</a></h2><br />");
 		
 		// Get contents for results
@@ -206,7 +223,7 @@ class SC2Rankings {
 				// Get encoded bnet url
 				$bnetLink = $playerNode->getAttribute('href');
 				$bnetLink = GeneralUtils::getBaseURL($targetURL) . $bnetLink;
-        $bnetLink = GeneralUtils::encodeURL($bnetLink);
+        		$bnetLink = GeneralUtils::encodeURL($bnetLink);
         
 				// Set encoded bnet url
 				$onePlayer['bnetURL'] = $bnetLink;
@@ -281,9 +298,9 @@ class SC2Rankings {
 	/**
 	 * This function gets GM rankings from BNET for a specific region and save it to disk
 	 */
-	protected function saveGMRankingsForRegion($region) {
-	  $filePath = $this->getCachePath($region);
-	  $rankingsArray = $this->getBnetGMRankings($region);
+	protected function saveGMRankingsForRegion($game, $region) {
+	  $filePath = $this->getCachePath($game, $region);
+	  $rankingsArray = $this->getBnetGMRankings($game, $region);
 	  file_put_contents($filePath, json_encode($rankingsArray), LOCK_EX);	
 	}
 	
@@ -291,45 +308,47 @@ class SC2Rankings {
 	 * This function returns grandmasters rankings across regions
 	 *  Rankings data are taken from cache, this method does not retreive data from BNET
 	 */
-	protected function getCombinedGMRankings()
+	protected function getCombinedGMRankings($game)
 	{
 		// This function can execute longer since we might need to retrieve data from many sources
-	  set_time_limit(60*10);
+		set_time_limit(60*10);
 
-	  // Get file path of all our GM data
-	  $cn = $this->getCachePath('cn');
-	  $krtw = $this->getCachePath('krtw');
-	  $eu = $this->getCachePath('eu');
-	  $na = $this->getCachePath('am');
-	  $sea = $this->getCachePath('sea');
-    
-    // This part checks if we have GM data for each region.
-    // If not we fetches it from BNET
-    if ( !file_exists($cn) ) {
-      $this->saveGMRankingsForRegion('cn');
-    }
-    if ( !file_exists($krtw) ) {
-      $this->saveGMRankingsForRegion('krtw');
-    }
-    if ( !file_exists($eu) ) {
-      $this->saveGMRankingsForRegion('eu');
-    }
-    if ( !file_exists($na) ) {
-      $this->saveGMRankingsForRegion('am');
-    }
-    if ( !file_exists($sea) ) {
-      $this->saveGMRankingsForRegion('sea');
-    }    
-    
-    // Gets data from file and decode it to objects
+		$game = $this->options['game'];
+
+		// Get file path of all our GM data
+		$cn = $this->getCachePath($game, 'cn');
+		$krtw = $this->getCachePath($game, 'krtw');
+		$eu = $this->getCachePath($game, 'eu');
+		$na = $this->getCachePath($game, 'am');
+		$sea = $this->getCachePath($game, 'sea');
+
+		// This part checks if we have GM data for each region.
+		// If not we fetches it from BNET
+		if ( !file_exists($cn) ) {
+		  $this->saveGMRankingsForRegion($game, 'cn');
+		}
+		if ( !file_exists($krtw) ) {
+		  $this->saveGMRankingsForRegion($game, 'krtw');
+		}
+		if ( !file_exists($eu) ) {
+		  $this->saveGMRankingsForRegion($game, 'eu');
+		}
+		if ( !file_exists($na) ) {
+		  $this->saveGMRankingsForRegion($game, 'am');
+		}
+		if ( !file_exists($sea) ) {
+		  $this->saveGMRankingsForRegion($game, 'sea');
+		}    
+
+		// Gets data from file and decode it to objects
 		$cn = json_decode(file_get_contents($cn));
 		$krtw = json_decode(file_get_contents($krtw));
-    $eu = json_decode(file_get_contents($eu));
-    $na = json_decode(file_get_contents($na));
-    $sea = json_decode(file_get_contents($sea));
-		
+		$eu = json_decode(file_get_contents($eu));
+		$na = json_decode(file_get_contents($na));
+		$sea = json_decode(file_get_contents($sea));
+			
 		$global = array_merge($cn, $krtw, $eu, $na, $sea);
-    
+
 		usort($global, array(__CLASS__, 'defaultRankingsSort'));
 		$global = $this->addRankingsField($global);
 		
@@ -444,9 +463,7 @@ class SC2Rankings {
 					$oneDivision['wins'] = GeneralUtils::parseInt($wins);
 				}
 				
-				// Get losses - all masters random or master team with bracker < 4 have losses
-				if ( ($league == 'master' && $type == 'random') || 
-					 ($league == 'master' && $type == 'team' && $bracket < 4) ) {
+				if ( count($oneRanking->find('.losses')) > 0 ) {
 					$losses = $oneRanking->find('.losses', 0)->plaintext;
 					$oneDivision['losses'] = GeneralUtils::parseInt($losses);
 					$diviser = $oneDivision['wins'] + $oneDivision['losses'];
@@ -563,11 +580,11 @@ class SC2Rankings {
 		return $rankingsArray;
 	}
 	
-	protected function getCachePath($region = NULL)
+	protected function getCachePath($game = NULL, $region = NULL)
 	{
 		$fullPath = GeneralUtils::serverBasePath() . DIRECTORY_SEPARATOR . 
 			'cache' . DIRECTORY_SEPARATOR . 'ranks' . DIRECTORY_SEPARATOR . 
-			$this->getIdentifierForRequest($region) . '.json';
+			$this->getIdentifierForRequest($game, $region) . '.json';
 		return $fullPath;
 	}
 	
@@ -575,11 +592,11 @@ class SC2Rankings {
 	 * Creates an unique identifier for the request. 
 	 * Currently used as filename for cache
 	 */
-	protected function getIdentifierForRequest($region = NULL)
+	protected function getIdentifierForRequest($game = NULL, $region = NULL)
 	{
 		$region = (isset($region) && !is_null($region)) ? $region : $this->options['region'];
-		
-		$identifier = $region . '-' . $this->options['league'];
+		$game = (isset($game) && !is_null($game)) ? $game : $this->options['game'];
+		$identifier = $region . '-' . $game . '-' . $this->options['league'];
 		if ( $this->options['league'] != 'grandmaster' ) {
 		  $identifier .= '-' . $this->options['race'] . '-' . $this->options['bracket'];
 		}
@@ -595,6 +612,7 @@ class SC2Rankings {
 		
 		// Map the region
 		$region = GeneralUtils::mapKeyToValue($ranksRegionMapper, $this->options['region']);
+		$game = $this->options['game'];
 		
 		// Adjust the league, race
 		$league = strtolower($this->options['league']);
@@ -609,6 +627,10 @@ class SC2Rankings {
 		// Final URL
 		$ranksURL = RANKSURL . '/ranks/';
 		$ranksURL .= $region . '/' . $league . '/' . $bracket .  $type . '/' . $race . '/points' . '/' . ($pageNum - 1)* 100;
+
+		if ( $game == 'wol' ) {
+			$ranksURL .= '/0/0';
+		}
 		return $ranksURL ;
 	}
 	

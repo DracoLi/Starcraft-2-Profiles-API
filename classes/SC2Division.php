@@ -180,9 +180,9 @@ class SC2Division {
 		return $divisions;
 	}
   
-  private function parseAllDivisionsPage()
-  {
-	  // Get data to be used
+  	private function parseAllDivisionsPage()
+  	{
+	  	// Get data to be used
 		$divisionsHTML = str_get_html($this->options['content']);
 		$divisions = array();
 		
@@ -191,9 +191,17 @@ class SC2Division {
 		
 		// Get current player name
 		$currentPlayer = $divisionsHTML->find('#profile-header h2 a', 0)->plaintext;
-		
-		$divisionNodes = $divisionsHTML->find('#profile-menu li');
-		for ( $i = 2; $i < count($divisionNodes); $i++ ) {
+		$tempDivisionNodes = $divisionsHTML->find('#profile-menu li');
+		$divisionNodes = array();
+		for ( $i = 0; $i < count($tempDivisionNodes); $i++ ) {
+			$class = $tempDivisionNodes[$i]->getAttribute('class');
+			$pos = strpos($class, 'submenu');
+			if ( $pos !== false ) {
+				$divisionNodes[] = $tempDivisionNodes[$i];
+			}
+		}
+
+		for ( $i = 0; $i < count($divisionNodes); $i++ ) {
 			
 			// Get data container
 			$oneDivision = array();

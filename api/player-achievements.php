@@ -10,6 +10,7 @@ require_once('../helpers/RestUtils.php');
 
 // Constants
 $defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/383803/1/BlackCitadel/achievements/category/4325378',
+                       'game' => 'wol',
                        'type' => 'json');
 
 // Get basic parameters
@@ -17,6 +18,7 @@ $options = array();
 $options['url'] = $_REQUEST['url'];			// The player's profile URL or an achievement page
 $options['content'] = $_REQUEST['content'];	// Content of the achievement page
 $options['type'] = $_REQUEST['type'];
+$options['game'] = $_REQUEST['game'];
 
 $options = GeneralUtils::getDefaults($defaultParams, $options);
 

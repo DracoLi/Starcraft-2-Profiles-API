@@ -9,6 +9,7 @@ require_once('../helpers/helper-fns.php');
 // Default Params, this is used when cettain options not specified
 $defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/2439371/1/coLMinigun/ladder/leagues',
 					   'offset' => 0,
+					   'game' => 'wol',
 					   'type' => 'json');
 					   
 // Get basic parameters
@@ -17,6 +18,7 @@ $options['url'] = $_REQUEST['url'];			    // URL of the division page. Ranks or 
 $options['content'] = $_REQUEST['content'];	// Content of the division page
 $options['offset'] = $_REQUEST['offset']; 
 $options['amount'] = $_REQUEST['amount'];
+$options['game'] = $_REQUEST['game'];
 $options['type'] = $_REQUEST['type'];
 
 // Merge user param with default

@@ -8,15 +8,37 @@ class URLConnect
 	private $onlyHeader;
 	private $timeout;
 
-    public function __construct($url, $timeout = 60, $onlyHeader = FALSE)
+    public function __construct($url, $timeout = 60, $onlyHeader = FALSE, $shouldPost = FAlSE, $vars = NULL)
     {
         $this->url = $url;
-		    $this->timeout = $timeout;
-		    $this->onlyHeader = ($onlyHeader) ? TRUE: FALSE;
-        $this->getData();
+	    $this->timeout = $timeout;
+	    $this->onlyHeader = ($onlyHeader) ? TRUE: FALSE;
+
+        if ( $shouldPost ) {
+            $this->getPostData($vars);
+        }else {
+            $this->getData();    
+        }
     }
 
-    public function getData() 
+    public function getPostData($vars)
+    {
+        if ( isset($this->url) && $this->url != '' ) {
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $this->url);
+            curl_setopt($curl, CURLOPT_POST, true);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $vars);
+            curl_setopt($curl, CURLOPT_NOBODY, $this->onlyHeader);
+            curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $this->timeout);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+            $this->content = curl_exec($curl);
+            $this->info = curl_getinfo($curl);
+            curl_close($curl);  
+        }
+    }
+
+    public function getData()
     {
 		if ( isset($this->url) && $this->url != '' ) {
 			$curl = curl_init();
