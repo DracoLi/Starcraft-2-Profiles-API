@@ -337,21 +337,28 @@ class SC2Division {
 		if ( $divisionData['bracket'] > 1 ) {
 			// Find out total players
 			$firstRow = $divisionHTML->find('table tr', 1);
-			$totalColumns = count($firstRow->find('td'));
-			$bannerAdjustment = $firstRow->find('.banner', 0) ? 1 : 0;
-			if ( $divisionData['league'] == 'grandmaster' || $divisionData['league'] == 'master' )
-			{
-				$minColumns = 6 + $bannerAdjustment;
-			}else {
-				$minColumns = 5 + $bannerAdjustment;
-			}
-			
-			if ( $totalColumns > $minColumns ) {
-				// This is definately not random
+			$playerColumns = $firstRow->find('td a');
+			if ( count($playerColumns) > 1 ) {
 				$divisionData['type'] = 'team';	
 			}else {
 				$divisionData['type'] = 'random';	
 			}
+			// $totalColumns = count($firstRow->find('td'));
+			// $bannerAdjustment = $firstRow->find('.banner', 0) ? 1 : 0;
+			// if ( $divisionData['league'] == 'grandmaster' || $divisionData['league'] == 'master' )
+			// {
+			// 	$minColumns = 6 + $bannerAdjustment;
+			// }else {
+			// 	$minColumns = 5 + $bannerAdjustment;
+			// }
+			// print "<br>total columns: " . $totalColumns;
+			// print "<br>minColumns: " . $minColumns;
+			// if ( $totalColumns > $minColumns ) {
+			// 	// This is definately not random
+				
+			// }else {
+			// 	$divisionData['type'] = 'random';	
+			// }
 		}else {
 		  $divisionData['type'] = 'random';	
 		}
@@ -457,7 +464,7 @@ class SC2Division {
 				// Get data
 				$onePlayer = array();	
 				$charNode = $rankingNode->find('td', 2 + $bannerAdjustment + $i);
-				
+
 				// Get char race
 				$race = $charNode->find('a', 0)->getAttribute('class');
 				$startpos = strpos($race, 'race-') + strlen('race-');
