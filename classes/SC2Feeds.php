@@ -73,7 +73,7 @@ class SC2Feeds {
     $foundPromoted = false;
     $promotedFeed = NULL;
     for ($i=0; $i < count($ourFeeds); $i++) { 
-        $feed = $ourFeeds[0];
+        $feed = $ourFeeds[$i];
         if ( $feed->promoted && !$foundPromoted ) {
           $promotedFeed = $feed;
           $foundPromoted = true;
@@ -283,7 +283,7 @@ class SC2Feeds {
       $feed->sourceType = "SC2Enhanced";
       $adjustedFeeds[] = $feed;
     }
-    
+
     return $adjustedFeeds;
   }
   
