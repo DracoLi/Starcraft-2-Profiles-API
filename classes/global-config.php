@@ -26,11 +26,11 @@ $displayRegionMapper = array(
 	'tw' => 'TW');
 
 // Set the error reporting for all pages
-if ( ENVIROMENT == 'DEVELOPMENT' ) {
-	error_reporting(E_ALL ^ E_NOTICE);	// Stop notice reporting
-}else if ( ENVIROMENT == 'PRODUCTION' ) {
-	error_reporting(0);					// Stop all error reporting
-}
+// if ( ENVIROMENT == 'DEVELOPMENT' ) {
+// 	error_reporting(E_ALL ^ E_NOTICE);	// Stop notice reporting
+// }else if ( ENVIROMENT == 'PRODUCTION' ) {
+// 	error_reporting(0);					// Stop all error reporting
+// }
 
 // Redis setup
 require '../vendor/predis/predis/autoload.php';
