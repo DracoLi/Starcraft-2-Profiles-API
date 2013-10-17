@@ -11,3 +11,5 @@ cache/custom-divisions/*
 
 *.mp4
 *.rdb
+
+test.php
