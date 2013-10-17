@@ -8,11 +8,11 @@ require_once('../classes/SC2Division.php');
 require_once('../helpers/helper-fns.php');
 
 // Default when no params are passed
-$defaultParams = array('url' => 'http://eu.battle.net/sc2/en/profile/12641/2/AlkaduR/ladder/leagues',
+$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/1655210/1/ArTiFaKs/ladder/leagues',
 					   'grabFirstDiv' => "true",
 					   'game' => 'wol',
 					   'type' => 'json');
-					             
+
 // Get basic parameters
 $options = array();
 $options['game'] = $_REQUEST['game'];

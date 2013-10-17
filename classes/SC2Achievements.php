@@ -8,7 +8,7 @@ require_once('../helpers/URLConnect.php');
 
 /**
  * Handles all tasks related to player achievements. It only handles parsing Bnet data
- * No support for linking achievements to awards (portrait, decal) to simplify data. 
+ * No support for linking achievements to awards (portrait, decal) to simplify data.
  * Users must supply the url to parse. This means that there's chance that the url for bnet achievements changes.
  * In this case, the user will receive a 404 error. User can then optionally grab a diotionary of achievement links from this class
  *
@@ -22,7 +22,7 @@ class SC2Achievements {
 	private $contentURL;
 	private $game;
 	private $dataToPrint;
-	
+
 	/**
 	 * Initializes SC2Achievements by assigning the content to parse. Then perfrom the parse on the content.
 	 * If no content is received, we send out an error page.
@@ -36,7 +36,7 @@ class SC2Achievements {
 		$this->contentURL = $url;
 		$this->game = $game;
 	}
-	
+
 	/**
 	 * Return an array of achievements sections and url that can be used by user
 	 * @param url The player's base url
@@ -50,11 +50,11 @@ class SC2Achievements {
 		}else if ( $this->game == 'hots' ) {
 			$data = simplexml_load_file('../assets/achievements-hots.xml');
 		}
-		
+
 		$achievementsData = SC2Achievements::parseInnerAchievements($data->children(), $this->contentURL);
 		return $achievementsData;
 	}
-	
+
 	/**
 	 * A helper recursive function that helps to parse our xml file with unknown number of drilldowns
 	 * @param $data The SimpleXMLElement containing an array of data
@@ -64,7 +64,7 @@ class SC2Achievements {
 	protected static function parseInnerAchievements($data, $base)
 	{
 		$allAchievements = array();
-		
+
 		foreach ( $data as $oneNode ) {
 			$oneAchievement = array();
 			$oneAchievement['name'] = (string)$oneNode->name;
@@ -78,7 +78,7 @@ class SC2Achievements {
 		}
 		return $allAchievements;
 	}
-	
+
 	/**
 	 * Parse the content to get achievements data
 	 * @return Array the json array for the achievements data
@@ -89,51 +89,51 @@ class SC2Achievements {
 		$pageHTML = str_get_html($this->content)->find('#profile-right', 0);
 		$achievementCategory = array();
 		$userBaseURL = GeneralUtils::getBaseURL($this->contentURL);
-		
+
 		// Get general category info (progress)
 		$progressNode = $pageHTML->find('.achievements-progress span', 0);
 		if ( $progessNode ) {
 			$progress = array();
-			
+
 			// Get current progress
 			$fullwords = $progressNode->plaintext;
 			$endpos = strpos($fullwords, '/');
 			$current = substr($fullwords, 0, $endpos);
 			$current = GeneralUtils::parseInt($current);
 			$progress['current'] = $current;
-			
+
 			// Get total progress
 			$total = substr($fullwords, $endpos + 1);
 			$total = GeneralUtils::parseInt($total);
 			$progress['total'] = $total;
-			
-			$achievementCategory['progress'] = $progress;	
+
+			$achievementCategory['progress'] = $progress;
 		}
-		
+
 		// Get all achievements in this category
 		$achievements = array();
 		$achievementNodes = $pageHTML->find('#achievements-wrapper .achievement');
 		foreach ( $achievementNodes as $achievementNode ) {
 			$oneAchievement = array();
-			
+
 			// Get achievement image info
 			$imageWords = $achievementNode->find('.icon span', 0)->getAttribute('style');
 			$oneAchievement['image'] = SC2Utils::parseBnetImageInfo($imageWords, $userBaseURL);
-			
+
 			// Get achievement name
 			$achievementName = $achievementNode->find('.desc span', 0)->plaintext;
 			$oneAchievement['name'] = trim($achievementName);
-			
+
 			// Get achievement description
 			$achievementDescription = $achievementNode->find('.desc', 0)->plaintext;
 			$startpos = strpos($achievementDescription, $achievementName) + strlen($achievementName);
 			$achievementDescription = substr($achievementDescription, $startpos);
 			$oneAchievement['description'] = html_entity_decode(trim($achievementDescription));
-			
+
 			// Get achivement points
-			$points = $achievementNode->find('.meta span', 0)->plaintext; 
+			$points = $achievementNode->find('.meta span', 0)->plaintext;
 			$oneAchievement['points'] = GeneralUtils::parseInt($points);
-			
+
 			// Get achievement dateEarned. Date earned records the last time any progress is made on the achievement if its not earned
 			$fullwords = $achievementNode->find('.meta', 0)->plaintext;
 			$startpos = strpos($fullwords, $points) + strlen($points);
@@ -141,7 +141,7 @@ class SC2Achievements {
 			if ( strlen(trim($dateEarned)) > 0 ) {
 				$oneAchievement['dateEarned'] = SC2Utils::joinedDateToTimeStamp(trim($dateEarned), $this->contentURL, FALSE);
 			}
-			
+
 			// Get achievement isEarned and isFinished
 			$isFinished = FALSE;
 			$fullwords = $achievementNode->getAttribute('class');
@@ -150,34 +150,34 @@ class SC2Achievements {
 				$isFinished = TRUE;
 			}
 			$oneAchievement['isFinished'] = $isFinished;
-			
+
 			if ( !$isFinished ) {
 				$isEarned = isset($oneAchievement['dateEarned']) ? TRUE : FALSE;
 			}else {
 				$isEarned = TRUE;
 			}
 			$oneAchievement['isEarned'] = $isEarned;
-			
+
 			// Get achievement progress
 			$progessNode = $achievementNode->find('.achievements-progress', 0);
 			if ( $progessNode ) {
 				// Get data
 				$progress = array();
 				$fullwords = $progessNode->getAttribute('data-tooltip');
-				
+
 				// Get current progress
 				$endpos = strpos($fullwords, '/');
 				$current = substr($fullwords, 0, $endpos);
 				$progress['current'] = GeneralUtils::parseInt($current);
-				
+
 				// Get total progress
 				$startpos = $endpos + 1;
 				$total = substr($fullwords, $startpos);
 				$progress['total'] = GeneralUtils::parseInt($total);
-				
+
 				$oneAchievement['progress'] = $progress;
 			}
-		
+
 			// Get series or criteria
 			$seriesNode = $achievementNode->find('.series', 0);
 			if ( $seriesNode ) {
@@ -187,7 +187,7 @@ class SC2Achievements {
 					$oneAchievement['series'] = $series;
 				}else if ( $criteriaNode = $seriesNode->find('.series-criteria', 0) ){
 					$criteria = $this->getCriteria($criteriaNode);
-					
+
 					// Check if all criteria are empty
 					$hasEmpty = FALSE;
 					foreach ( $criteria as $oneCriteria ) {
@@ -196,7 +196,7 @@ class SC2Achievements {
 					   break;
 					 }
 					}
-					
+
 					if ( $hasEmpty == FALSE ) {
 					 $oneAchievement['criteria'] = $criteria;
 					}
@@ -205,39 +205,39 @@ class SC2Achievements {
 			// Add this achievement to our array
 			$achievements[] = $oneAchievement;
 		}
-		
+
 		return $achievements;
 	}
-	
+
 	protected function getSeries($theNode, $userBaseURL)
 	{
 		$series = array();
-		
+
 		// Get series achievements
 		$seriesAchievements = array();
 		$seriesNodes = $theNode->find('.series-tile');
 		foreach ( $seriesNodes as $seriesNode ) {
 			$oneSeries = array();
-			
+
 			// Get image
 			$imageStyle = $seriesNode->find('.icon-frame', 0)->getAttribute('style');
 			$oneSeries['image'] = SC2Utils::parseBnetImageInfo($imageStyle, $userBaseURL);
-			
+
 			// Get name
 			$titleNode = $seriesNode->find('.tooltip-title', 0);
 			$name = $titleNode->plaintext;
 			$oneSeries['name'] = trim($name);
-				
+
 			// Get description
 			$description = $titleNode->parentNode()->plaintext;
 			$startpos = strpos($description, $name) + strlen($name);
 			$description = substr($description, $startpos);
 			$oneSeries['description'] = trim($description);
-			
+
 			// Get points
 			$points = $seriesNode->find('.series-badge', 0)->plaintext;
 			$oneSeries['points'] = GeneralUtils::parseInt($points);
-			
+
 			// Get isEarned
 			$isEarned = FALSE;
 			$classwords = $seriesNode->getAttribute('class');
@@ -246,26 +246,26 @@ class SC2Achievements {
 				$isEarned = TRUE;
 			}
 			$oneSeries['isEarned'] = $isEarned;
-			
-			$series[] = $oneSeries;	
+
+			$series[] = $oneSeries;
 		}
-			
+
 		// Finishes series data for this achievements.
 		return $series;
 	}
-	
+
 	protected function getCriteria($theNode)
 	{
 		$criteria = array();
-	
+
 		// Get a list of criteria names
 		$criteriaNodes = $theNode->find('li');
 		foreach ( $criteriaNodes as $criteriaNode ) {
 			$oneCriteria = array();
-			
+
 			// Get criteria name
 			$oneCriteria['name'] = $criteriaNode->plaintext;
-			
+
 			// Get isEarned
 			$isEarned = TRUE;
 			$fullwords = $criteriaNode->getAttribute('class');
@@ -274,27 +274,27 @@ class SC2Achievements {
 				$isEarned = FALSE;
 			}
 			$oneCriteria['isEarned'] = $isEarned;
-			
+
 			// Get criteria type
 			$pos = strpos($fullwords, 'list-');
 			$wordLength = strlen($fullwords) - 5;
 			$endpos = strpos($fullwords, 'earned');
 			$endpos = $endpos === FALSE ? $wordLength : $wordLength - 7;
 			$type = substr($fullwords, $pos + 5, $endpos);
-			
+
 			$oneCriteria['type'] = trim($type);
 
 			$criteria[] = $oneCriteria;
 		}
-		
+
 		return $criteria;
 	}
-	
+
 	public function getJsonData()
 	{
 		return $this->jsonData;
 	}
-	
+
 	/**
 	 * Print out the json data in array format
 	 * @return void
@@ -302,17 +302,17 @@ class SC2Achievements {
 	public function displayArray()
 	{
 		$this->addThingsToPrint('<h2><a href="' . $this->contentURL . '">' .$this->contentURL . '</a></h2><pre>' . print_r(json_decode($this->getJsonData()), TRUE) . '</pre>');
-		
-		$fullContent = RestUtils::getHTTPHeader('Testing') . $this->dataToPrint . RestUtils::getHTTPFooter(); 
+
+		$fullContent = RestUtils::getHTTPHeader('Testing') . $this->dataToPrint . RestUtils::getHTTPFooter();
 		RestUtils::sendResponse(200, $fullContent);
 	}
-	
+
 	/**
 	 * Quick function to add something to be printed
 	 */
 	public function addThingsToPrint($things)
 	{
-		$this->dataToPrint .= $things;	
+		$this->dataToPrint .= $things;
 	}
 }
 

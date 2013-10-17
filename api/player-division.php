@@ -1,22 +1,22 @@
 <?
 
-/** 
+/**
  * Take a division url and returns all info for that division
  */
 require_once('../classes/SC2Division.php');
 require_once('../helpers/helper-fns.php');
 
 // Default Params, this is used when cettain options not specified
-$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/2439371/1/coLMinigun/ladder/leagues',
+$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/1655210/1/ArTiFaKs/ladder/leagues',
 					   'offset' => 0,
 					   'game' => 'wol',
 					   'type' => 'json');
-					   
+
 // Get basic parameters
 $options = array();
 $options['url'] = $_REQUEST['url'];			    // URL of the division page. Ranks or BNET.
 $options['content'] = $_REQUEST['content'];	// Content of the division page
-$options['offset'] = $_REQUEST['offset']; 
+$options['offset'] = $_REQUEST['offset'];
 $options['amount'] = $_REQUEST['amount'];
 $options['game'] = $_REQUEST['game'];
 $options['type'] = $_REQUEST['type'];

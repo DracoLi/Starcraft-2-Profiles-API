@@ -2,14 +2,14 @@
 
 /**
  * Returns a player's achievements for a given achivement category (url).
- * No support for linking achivements to awards (portrait, decal) to simplify data. 
+ * No support for linking achivements to awards (portrait, decal) to simplify data.
  */
 
 require_once('../classes/SC2Achievements.php');
 require_once('../helpers/RestUtils.php');
 
 // Constants
-$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/383803/1/BlackCitadel/achievements/category/4325378',
+$defaultParams = array('url' => 'http://us.battle.net/sc2/en/profile/1655210/1/ArTiFaKs/achievements/category/3211278',
                        'game' => 'wol',
                        'type' => 'json');
 
