@@ -1,6 +1,6 @@
 <?
 
-/** 
+/**
  * Provides feeds for our clients.
  *  Feeds include both feeds from us and Starcraft 2 related feeds from a
  *  variety of websites.
@@ -19,8 +19,8 @@ $options['update'] = $_REQUEST['update'];
 
 // Set default return type
 $defaultParams = array(
-    'amount' => '10', 
-    'offset' => '0', 
+    'amount' => '10',
+    'offset' => '0',
     'type' => 'json',
     'region' => 'na',
     'game' => 'hots',

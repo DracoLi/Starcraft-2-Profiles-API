@@ -9,3 +9,6 @@
 6. Divisions information
 
 ## Basically the api can get all the information you can possibly get from Battle.net and SC2ranks.
+
+
+June 17th, 2013 parsing fixes:

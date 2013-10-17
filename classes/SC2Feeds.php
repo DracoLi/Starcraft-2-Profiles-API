@@ -14,20 +14,20 @@ require_once('../helpers/URLConnect.php');
  * @version 1.0
  */
 class SC2Feeds {
-  
+
   private $jsonData;
   private $dataToPrint;
   private $options;
-  
+
   const PAGES_TO_PARSE = 1;
-  
+
   public function __construct($options)
 	{
 	  // Adjust player region for our list
 	  $region = $options["region"];
 	  if ( $region == "am" || $region == "na" ) {
 	    $region = "na";
-	  }else if ( $region == "kr" || $region == "tw" ||  
+	  }else if ( $region == "kr" || $region == "tw" ||
 	             $region == "krtw") {
 	    $region = "krtw";
 	  }else if ( $region == "eu" ){
@@ -37,34 +37,34 @@ class SC2Feeds {
   	}else {
   	  $region = "na";
   	}
-	  
+
 	  $this->options = $options;
 	  $this->options["region"] = $region;
-	  
+
 	  // Update everything if asked
 	  if ( $this->options["update"] == 'true' ) {
 	    $this->updateAllFeeds();
 	  }
   }
-  
+
   public function updateAllFeeds()
   {
     // This function can execute 10min since we might need to retrieve data from many sources
 	  set_time_limit(60*10);
-	  
+
     $na = $this->getBnetFeedsForRegion('na');
     $this->saveFeedsForRegion('na', $na);
-    
+
     $eu = $this->getBnetFeedsForRegion('eu');
     $this->saveFeedsForRegion('eu', $eu);
-    
+
     $sea = $this->getBnetFeedsForRegion('sea');
     $this->saveFeedsForRegion('sea', $sea);
-    
+
     $krtw = $this->getBnetFeedsForRegion('krtw');
     $this->saveFeedsForRegion('krtw', $krtw);
   }
-  
+
   public function getJsonData($jsonData = NULL)
 	{
 	  // Form a list of all our feeds
@@ -72,7 +72,7 @@ class SC2Feeds {
     $includedOurFeeds = array();
     $foundPromoted = false;
     $promotedFeed = NULL;
-    for ($i=0; $i < count($ourFeeds); $i++) { 
+    for ($i=0; $i < count($ourFeeds); $i++) {
         $feed = $ourFeeds[$i];
         if ( $feed->promoted && !$foundPromoted ) {
           $promotedFeed = $feed;
@@ -87,17 +87,17 @@ class SC2Feeds {
 	  if ( $sc2Feeds !== NULL ) {
 	    $totalFeeds = array_merge($totalFeeds, $sc2Feeds);
 	  }
-	  
+
 	  // Sort all of our feeds
 	  $totalFeeds = json_decode(json_encode($totalFeeds));
 	  usort($totalFeeds, array(__CLASS__, 'defaultFeedsSort'));
-	  
+
 	  // Filter our feeds according to our own specs
 	  $totalCount = count($totalFeeds);
 	  $offset = $this->options['offset'];
 	  $amount = $this->options['amount'];
 	  $neededFeeds = array_slice($totalFeeds, $offset ,$amount);
-	  
+
     // Get the most recent promoted feed and add it to our list
     if ($offset == 0) {
       $tempArray = array();
@@ -109,33 +109,35 @@ class SC2Feeds {
 	  $jsonResult = array();
 	  $jsonResult['total'] = count($totalFeeds);
 	  $jsonResult['feeds'] = $neededFeeds;
-	  
+
 		return json_encode($jsonResult);
   }
-  
+
   protected function getCachedFeedsForRegion($region)
   {
+    global $redis;
     $filepath = $this->getCachedFeedsFilepathForRegion($region);
-    if ( file_exists($filepath) ) {
-      return json_decode( file_get_contents($filepath) );
+    if ( $redis->exists($filepath) ) {
+      return json_decode( $redis->get($filepath) );
     }
     return NULL;
   }
-  
+
   /**
    * Save feeds for a certain region into a file.
    * This method handles not saving duplicate feeds, only the new ones
    */
   protected function saveFeedsForRegion($region, $feeds)
   {
+    global $redis;
     $filepath = $this->getCachedFeedsFilepathForRegion($region);
     $requiresSave = false;
-    
+
     $feedsToSave = NULL;
-    if ( file_exists($filepath) ) {
-      $feedsToSave = json_decode( file_get_contents($filepath) );
+    if ( $redis->exists($filepath) ) {
+      $feedsToSave = json_decode( $redis->get($filepath) );
     }
-    
+
     if ( $feedsToSave == NULL )
     {
       $feedsToSave = $feeds;
@@ -146,25 +148,26 @@ class SC2Feeds {
       $latestSavedFeed = $feedsToSave[0];
       $newFeeds = array();
       foreach ( $feeds as $feed ) {
-        if ( $feed["title"] == $latestSavedFeed->title && 
+        if ( $feed["title"] == $latestSavedFeed->title &&
              $feed["postedDate"] == $latestSavedFeed->postedDate ) {
           break;
         }
         $newFeeds[] = $feed;
       }
-      
+
       // Combine our new feeds with old ones
       if ( count($newFeeds) > 0 ) {
         $feedsToSave = array_merge($newFeeds, $feedsToSave);
         $requiresSave = true;
       }
     }
-    
+
     if ( $requiresSave ) {
-      file_put_contents($filepath, json_encode($feedsToSave));
+      $redis->set($filepath, json_encode($feedsToSave));
+      // file_put_contents($filepath, json_encode($feedsToSave));
     }
   }
-  
+
   /**
    * Return the cached feeds file path for a certain region
    * This is not for our own feeds
@@ -174,7 +177,7 @@ class SC2Feeds {
     return GeneralUtils::serverBasePath() . DIRECTORY_SEPARATOR . 'cache' .
               DIRECTORY_SEPARATOR . 'feeds' . DIRECTORY_SEPARATOR . $region . '.json';
   }
-  
+
   /**
    * Get for BNET feeds for a certain region from BNET directly
    */
@@ -185,7 +188,7 @@ class SC2Feeds {
       // return $this->getBnetFeedsForChina();
       $region = 'na';
     }
-    
+
     # The ?- avoids any promo splash pages
     $gmMapper = array('na' => 'http://us.battle.net/sc2/en/?-',
 		                  'am' => 'http://us.battle.net/sc2/en/?-',
@@ -196,21 +199,14 @@ class SC2Feeds {
     $baseURL = GeneralUtils::mapKeyToValue($gmMapper, $region);
 		$targetURL = $baseURL;
 		$pagesToParse = SC2Feeds::PAGES_TO_PARSE;
-		
+
 		// Parse all the pages
 		$totalFeeds = array();
-		while ( $targetURL && $pagesToParse > 0 ) {
-		  list($feeds, $targetURL) = $this->parseBNETFeedsForURL($targetURL, $region);
-		  $totalFeeds = array_merge($totalFeeds, $feeds);
-		  
-		  // Reduce pages to parse and set next url to parse
-		  $pagesToParse = $pagesToParse - 1;
-		  $targetURL = $baseURL . $targetURL;
-		}
-		
+    list($feeds, $targetURL) = $this->parseBNETFeedsForURL($targetURL, $region);
+    $totalFeeds = array_merge($totalFeeds, $feeds);
 		return $totalFeeds;
   }
-  
+
   /**
    * Parse BNET feeds for a certain URL
    */
@@ -222,49 +218,47 @@ class SC2Feeds {
 			RestUtils::sendResponse($urlconnect->getHTTPCode(), $this->dataToPrint);
 		}
 		$contents = str_get_html($urlconnect->getContent());
-		
+
 		$feeds = array();
-		foreach ( $contents->find('#news-updates .news-article-inner') as $oneFeedNode )
+		foreach ( $contents->find('#blog-articles .article-wrapper') as $oneFeedNode )
 		{
 		  $oneFeed = array();
-		  
+
 		  // Get feed title
-		  $oneFeed['title'] = trim($oneFeedNode->find('h3 a', 0)->plaintext);
-		  
+		  $oneFeed['title'] = trim($oneFeedNode->find('.article-title', 0)->plaintext);
+
 		  // Get feed url
-		  $oneFeed['url'] = $targetURL . $oneFeedNode->find('h3 a', 0)->getAttribute('href');
-		  
+		  $oneFeed['url'] = $targetURL . $oneFeedNode->find('a', 0)->getAttribute('href');
+
 		  // Get feed posted date
-		  preg_match('/(\d+)_(\d+)_(\d+)/', $oneFeed['url'], $matches);
-		  if ( $region == 'eu' ) {
-		    $postedDate = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
-		  }else if ( $region == 'krtw' || $region == 'kr' ) {
-		    $postedDate = $matches[1] . '-' . $matches[2] . '-' . $matches[3];
-		  }else {
-		    $postedDate = $matches[3] . '-' . $matches[1] . '-' . $matches[2];
-		  }
-		  $oneFeed['postedDate'] = (int)strtotime($postedDate);;
-		  
+      foreach ( $oneFeedNode->find('.article-content meta') as $oneMeta )
+      {
+        if ( $oneMeta->getAttribute('itemprop') == 'datePublished' ) {
+          $postedDate = $oneMeta->getAttribute('content');
+          $oneFeed['postedDate'] = (int)strtotime($postedDate);;
+        }
+      }
+
 		  // Get feed content
-		  $content = $oneFeedNode->find('.article-summary p', 0)->plaintext;
+		  $content = $oneFeedNode->find('.article-summary', 0)->plaintext;
 		  $oneFeed['content'] = trim($content);
-		  
+
 		  // Get feed type - same for everything
 		  $oneFeed['sourceType'] = "Blizzard";
-		  
+
 		  $feeds[] = $oneFeed;
 	  }
-	  
+
 	  $results = array();
 	  $results[0] = $feeds;
-	  
+
 	  // Get next page
-	  $nextPath = $contents->find('.blog-paging .button1-next', 0)->getAttribute('href');
-	  $results[1] = $nextPath;
-	  
+	  // $nextPath = $contents->find('.blog-paging .button1-next', 0)->getAttribute('href');
+	  $results[1] = NULL;
+
 	  return $results;
   }
-  
+
   /**
    * Get our feeds. No region support right now
    */
@@ -273,7 +267,7 @@ class SC2Feeds {
     $feedsPath = GeneralUtils::serverBasePath() . DIRECTORY_SEPARATOR . 'assets' .
               DIRECTORY_SEPARATOR . 'feeds.json';
     $feeds = json_decode(file_get_contents($feedsPath));
-    
+
     // Process our feeds
     $adjustedFeeds = array();
     foreach ( $feeds as $feed ) {
@@ -286,7 +280,7 @@ class SC2Feeds {
 
     return $adjustedFeeds;
   }
-  
+
   /**
    * Sort feeds by postedDate
    */
@@ -301,26 +295,26 @@ class SC2Feeds {
     }
     return 0;
   }
-  
+
   /**
 	 * For testing, display our output json data in an array with html content
 	 */
 	public function displayArray()
 	{
 		$newData = json_decode($this->getJsonData());
-		
+
 		$this->addThingsToPrint('<pre>' . print_r($newData, TRUE) . '</pre>');
-		
-		$fullContent = RestUtils::getHTTPHeader('Testing') . $this->dataToPrint . RestUtils::getHTTPFooter(); 
+
+		$fullContent = RestUtils::getHTTPHeader('Testing') . $this->dataToPrint . RestUtils::getHTTPFooter();
 		RestUtils::sendResponse(200, $fullContent);
 	}
-	
+
   /**
 	 * Quick function to add something to be printed
 	 */
 	public function addThingsToPrint($things)
 	{
-		$this->dataToPrint .= $things;	
+		$this->dataToPrint .= $things;
 	}
 }
 

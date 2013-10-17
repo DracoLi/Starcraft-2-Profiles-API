@@ -10,3 +10,4 @@ cache/feeds/*
 cache/custom-divisions/*
 
 *.mp4
+*.rdb
