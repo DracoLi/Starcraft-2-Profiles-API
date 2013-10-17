@@ -35,12 +35,7 @@ if ( ENVIROMENT == 'DEVELOPMENT' ) {
 // Redis setup
 require '../vendor/predis/predis/autoload.php';
 Predis\Autoloader::register();
-$redisurl = NULL;
-if ( empty($_ENV["REDISTOGO_URL"]) ) {
-	$redisurl = '127.0.0.1:6379';
-}else {
-	$redisurl = $_ENV["REDISTOGO_URL"];
-}
-$redis = new Predis\Client(getenv('REDISTOGO_URL'));
+$redis = new Predis\Client("crestfish.redistogo.com:9279");
+$redis->auth('328155f031c80f65c4f4f67350084d2c')
 
 ?>
