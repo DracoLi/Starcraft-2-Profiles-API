@@ -15,13 +15,13 @@ require_once('SC2Achievements.php');
  * @version 1.0
  */
 class SC2Player {
-		
+
 	private $jsonData;
 	private $content;
 	private $dataToPrint;
 	private $playerURL;
 	private $game;
-	
+
 	/**
 	 * Initializes the SC2Player by assigning the content to parse and the url of the content. Then perfrom the parse.
 	 * If no content is received, we send out an error page
@@ -40,19 +40,19 @@ class SC2Player {
 			RestUtils::sendResponse(204);
 			return;
 		}
-		
+
 		if ( SC2Utils::isbnetURL($this->playerURL) ) {
-			$this->jsonData = json_encode($this->getBNETPlayerInfo());	
+			$this->jsonData = json_encode($this->getBNETPlayerInfo());
 		}else {
-			$this->jsonData = json_encode($this->getRanksPlayerInfo());	
+			$this->jsonData = json_encode($this->getRanksPlayerInfo());
 		}
 	}
-	
+
 	public function getJsonData()
 	{
 		return $this->jsonData;
 	}
-	
+
 	/**
 	 * Print out the json data in array format
 	 * @return void
@@ -61,11 +61,11 @@ class SC2Player {
 	{
 		$this->addThingsToPrint("<h2><a href=\"". $this->playerURL . "\">" . $this->playerURL . "</a></h2>");
 		$this->addThingsToPrint('<pre>' . print_r(json_decode($this->getJsonData()), TRUE) . '</pre>');
-		
-		$fullContent = RestUtils::getHTTPHeader('Testing') . $this->dataToPrint . RestUtils::getHTTPFooter(); 
+
+		$fullContent = RestUtils::getHTTPHeader('Testing') . $this->dataToPrint . RestUtils::getHTTPFooter();
 		RestUtils::sendResponse(200, $fullContent);
 	}
-	
+
 	/**
 	 * Parses a Ranks player profile. This includes many info that BNET does not have such as region, world rankings, etc.
 	 * @return Array
@@ -74,7 +74,7 @@ class SC2Player {
 	{
 		$jsonArray = array();
 		$playerHTML = str_get_html($this->content)->find('.charprofile', 0);
-		
+
 		// Get profileImage
 		$profileImage = array();
 		{
@@ -84,25 +84,25 @@ class SC2Player {
 			$endpos = strpos($profileStyle, '")', $startpos);
 			$imageURL = RANKSURL . substr($profileStyle, $startpos, ($endpos - $startpos));
 			$profileImage['url'] = $imageURL;
-			
+
 			// Get image x
 			$startpos = strpos($profileStyle, 'scroll') + 6;
 			$endpos = strpos($profileStyle, 'px', $startpos);
 			$xValue = substr($profileStyle, $startpos, ($endpos - $startpos));
 			$profileImage['x'] = GeneralUtils::parseInt($xValue);
-			
+
 			// Get image y
 			$startpos = $endpos + 2;
 			$endpos = strpos($profileStyle, 'px', $startpos);
 			$yValue = substr($profileStyle, $startpos, ($endpos - $startpos));
 			$profileImage['y'] = GeneralUtils::parseInt($yValue);
-			
+
 			// Get image width
 			$startpos = strpos($profileStyle, 'width:') + 6;
 			$endpos = strpos($profileStyle, 'px', $startpos);
 			$width = substr($profileStyle, $startpos, ($endpos - $startpos));
 			$profileImage['width'] = GeneralUtils::parseInt($width);
-			
+
 			// Get image height
 			$startpos = strpos($profileStyle, 'height:') + 7;
 			$endpos = strpos($profileStyle, 'px', $startpos);
@@ -110,56 +110,56 @@ class SC2Player {
 			$profileImage['height'] = GeneralUtils::parseInt($width);
 		}
 		$jsonArray['image'] = $profileImage;
-		
-		// Get name	
+
+		// Get name
 		$nameNode = $playerHTML->find('.profile .name', 0);
 		$jsonArray['name'] = $nameNode->find('a', 0)->plaintext;
-		
+
 		// Get bnetURL
 		$jsonArray['bnetURL'] = $nameNode->find('a', 0)->getAttribute('href');
-		
+
 		// Get region
 		$jsonArray['region'] = SC2Utils::playerRegionFromBnetURL($jsonArray['bnetURL']);
-		
+
 		// Get historyURL
 		$historyURL = RANKSURL . $playerHTML->find('.profile .maps a', 0)->getAttribute('href');
 		$jsonArray['historyURL'] = $historyURL;
-		
+
 		// Get achievement points
 		$achievementPoints = $playerHTML->find('.profile .achievements span', 0)->plaintext;
 		$jsonArray['achievementPoints'] = GeneralUtils::parseInt($achievementPoints);
-		
+
 		// Get division data now
 		$divisions = array();
 		$divisionsNode = $playerHTML->find('.leagues');
 		foreach ( $divisionsNode as $oneNode ) {
-			
+
 			// Get division bracket
 			$bracket = trim($oneNode->find('.headertext', 0)->plaintext);
 			preg_match('/\d+/', $bracket, $matches);
 			$bracket = GeneralUtils::parseInt($matches[0]);
-			
+
 			// Get number of divisions for this division type
 			$divisionsForType = count($oneNode->find('td.badge'));
-			
+
 			for ( $i = 0; $i < $divisionsForType; $i++ ) {
-				
+
 				$oneDivision = array();
 				$oneDivision['bracket'] = $bracket;
-				
+
 				// Get league
 				$badgeClass = $oneNode->find('td.badge span', $i)->getAttribute('class');
 				$startpos = strpos($badgeClass, '-') + 1;
 				$endpos = strpos($badgeClass, ' ', $startpos);
 				$league = substr($badgeClass, $startpos, ($endpos - $startpos));
 				$oneDivision['league'] = strtolower($league);
-				
+
 				// Get the type of the divison. Team or random
 				if ( $oneDivision['bracket'] != 1 ) {
 					$type = $oneNode->find('td.bracket', $i)->plaintext;
-					$oneDivision['type'] = strtolower($type);	
+					$oneDivision['type'] = strtolower($type);
 				}
-				
+
 				// Get world rankings if exists
 				$worldRankNode = $oneNode->find('td.worldrank', $i);
 				$worldRankNode = $worldRankNode->find('.number', 0);
@@ -167,7 +167,7 @@ class SC2Player {
 					$worldRank = $worldRankNode->plaintext;
 					$oneDivision['worldRank'] = GeneralUtils::parseInt($worldRank);
 				}
-				
+
 				// Get region rankings if exists
 				$regionRankNode = $oneNode->find('td.regionrank', $i);
 				$regionRankNode = $regionRankNode->find('.number', 0);
@@ -175,17 +175,17 @@ class SC2Player {
 					$regionRank = $regionRankNode->plaintext;
 					$oneDivision['regionRank'] = GeneralUtils::parseInt($regionRank);
 				}
-				
+
 				// Get division points
 				$summaryNode = $oneNode->find('td.summary', $i);
-				
+
 				$points = $summaryNode->find('.number', 0)->plaintext;
 				$oneDivision['points'] = GeneralUtils::parseInt($points);
-					
+
 				// Get division wins
 				$wins = $summaryNode->find('.green', 0)->plaintext;
 				$oneDivision['wins'] = GeneralUtils::parseInt($wins);
-				
+
 				// Get division losses
 				if ( $oneDivision['league'] == 'grandmaster' || $oneDivision['league'] == 'master' ) {
 					$lossesNode = $summaryNode->find('.red', 0);
@@ -194,21 +194,21 @@ class SC2Player {
 						$oneDivision['losses'] = GeneralUtils::parseInt($losses);
 					}
 				}
-				
+
 				// get division name
 				$divisionGeneral = $oneNode->find('.divisionrank', $i);
-				
+
 				$name = $divisionGeneral->find('a', 0)->plaintext;
 				$oneDivision['name'] = $name;
-				
+
 				// get division url
 				$divisionURL = $divisionGeneral->find('a', 0)->getAttribute('href');
 				$oneDivision['url'] = RANKSURL . $divisionURL;
-				
+
 				// get division rank
 				$rank = $divisionGeneral->find('.number', 0)->plaintext;
 				$oneDivision['rank'] = GeneralUtils::parseInt($rank);
-				
+
 				// Get division players
 				$players = array();
 				{
@@ -218,57 +218,57 @@ class SC2Player {
 					}else {
 						$numPlayers = 1;
 					}
-					
+
 					for ( $j = 0; $j < $numPlayers; $j++ ) {
-						
+
 						// Create our data
 						$onePlayer = array();
 						$targetIndex = 4 * $i + $j;
 						$playerNode = $oneNode->find('.character', $targetIndex);
-						
+
 						// Get player race
 						$playerRace = $playerNode->find('img', 0)->getAttribute('class');
 						$onePlayer['race'] = strtolower($playerRace);
-						
+
 						// Get player name
 						$onePlayer['name'] = trim($playerNode->plaintext);
-						
+
 						// Get player url and determine if this player is someone else
 						$playerGeneral = $playerNode->find('a', 0);
 						if ( $playerGeneral ) {
 							// Get player url
 							$playerURL = $playerGeneral->getAttribute('href');
 							$onePlayer['ranksURL'] = RANKSURL . $playerURL;
-							
+
 							// Estimate the other player's bnet link
 							$onePlayer['bnetURL'] = SC2Utils::estimateBLink($onePlayer['ranksURL']);
 						}else {
 							// This player is us, we estimate this player's fav race here. 1v1 has precedence over 2v2, 2v2 over 3v3 etc.
 							if ( !isset($jsonArray['race']) ) {
-								$jsonArray['race'] = $onePlayer['race'];	
+								$jsonArray['race'] = $onePlayer['race'];
 							}
 						}
-						
+
 						// Add one player to players
 						$players[] = $onePlayer;
-					
+
 					} // All players added for this division
 				}
 				// Add players to this division
 				$oneDivision['players'] = $players;
-				
+
 				// Add this division
 				$divisions[] = $oneDivision;
 			}
 		}
-		
+
 		// Add user's divisions
 		$jsonArray['divisions'] = $divisions;
-		
+
 		// Finish sc2ranks profile for player
 		return $jsonArray;
 	}
-	
+
 	/**
 	 * Parses a BNET player profile. This includes aditional info such as career stats that Ranks do not have
 	 * @return Array
@@ -276,56 +276,56 @@ class SC2Player {
 	private function getBNETPlayerInfo()
 	{
 		$userBaseURL = GeneralUtils::getBaseURL($this->playerURL);
-		
+
 		// Get data
 		$playerHTML = str_get_html($this->content)->find('#profile-wrapper', 0);
 		$jsonArray = array();
-		
+
 		// Get profileImage
 		$imageStyle = $playerHTML->find('#profile-header #portrait span', 0)->getAttribute('style');
 		$jsonArray['image'] = SC2Utils::parseBnetImageInfo($imageStyle, $userBaseURL);
-		
+
 		// Get name
-		$jsonArray['name'] = $playerHTML->find('#profile-header h2 a', 0)->plaintext;
-		
+		$jsonArray['name'] = trim($playerHTML->find('#profile-header .user-name', 0)->plaintext);
+
 		// Save bnetURL
-		
+
 		// This work around to get the current BNET url is here else we get messed-up
 		// results on our client because somehow the chinese characters are encoded twice.
 		$bnetURL = $playerHTML->find('#profile-menu li a', 0)->getAttribute('href');
 		$bnetURL = GeneralUtils::getBaseURL($this->playerURL) . $bnetURL;
 		$bnetURL = GeneralUtils::encodeURL($bnetURL);
-		
+
 		$jsonArray['bnetURL'] = $bnetURL;
-			
+
 		// Get estimated ranks url
 		$jsonArray['ranksURL'] = SC2Utils::estimateRanksLink($bnetURL);
-		
+
 		// Save history url
 		$jsonArray['historyURL'] = $bnetURL . "matches";
-		
+
 		// Save ladder's url
 		$jsonArray['divisionsURL'] = $bnetURL . "ladder/leagues";
-		
+
 		// Save ladder's showcase url
 		$jsonArray['divisionsShowcaseURL'] = $bnetURL . "ladder/";
-		
+
 		// Save achievements urls
 		$achieve = new SC2Achievements(NULL, $jsonArray['bnetURL'], $this->game);
 		$achievementsArray = $achieve->getAllAchievementLinks();
 		$jsonArray['achievementsURL'] = $achievementsArray;
-		
+
 		// Get region
 		$jsonArray['region'] = SC2Utils::playerRegionFromBnetURL($jsonArray['bnetURL']);
-		
+
 		// Get achivement points
 		$achievementPoints = $playerHTML->find('#profile-header h3', 0)->plaintext;
 		$jsonArray['achievementPoints'] = GeneralUtils::parseInt($achievementPoints);
-		
+
 		// Season stats
 		{
 			$seasonStats = $playerHTML->find('.career-stats-box', 0);
-			
+
 			$terranWins = $seasonStats->find('.career-stat-block .stat-value', 0)->plaintext;
 			$terranWins = GeneralUtils::parseInt($terranWins);
 			$zergWins = $seasonStats->find('.career-stat-block .stat-value', 1)->plaintext;
@@ -336,15 +336,15 @@ class SC2Player {
 			// Get games tis season
 			$gamesThisSeason = $seasonStats->find('.career-stat-block .stat-value', 4)->plaintext;
 			$jsonArray['gamesThisSeason'] = GeneralUtils::parseInt($gamesThisSeason);
-				
+
 			// Most played mode
 			// $mostPlayedMode = $seasonStats->find('.stat-block h2', 1)->plaintext;
 			$jsonArray['mostPlayedMode'] = '1';
-			
+
 			// Total career games
 			$careerGames = $seasonStats->find('.career-stat-block .stat-value', 3)->plaintext;
 			$jsonArray['totalGames'] = GeneralUtils::parseInt($careerGames);
-			
+
 			// Most played race
 			$mostPlayedRaceKey = NULL;
 			if ($terranWins >= $zergWins && $terranWins >= $protossWins) {
@@ -356,11 +356,11 @@ class SC2Player {
 			}
 			$jsonArray['race'] = $mostPlayedRaceKey;
 		}
-		
+
 		// Career stats
 		{
 		  $careerStats = $playerHTML->find('#career-stats', 0);
-		  
+
 		  // For solo
 		  $bestSolo = $careerStats->find('#best-finish-SOLO', 0);
 
@@ -368,7 +368,7 @@ class SC2Player {
 		  $careerWords = $bestSolo->find('strong', 0)->plaintext;
 		  $timesWords = $bestSolo->find('strong', 1)->plaintext;
 		  $leagueWords = $bestSolo->find('strong', 2)->plaintext;
-		  
+
 		  // Solo league key and rank
 		  $bestSoloLeague = $careerStats->find('.badge-item', 0);
 		  $bestSoloLeague = $bestSoloLeague->find('.badge span', 0)->getAttribute('class');
@@ -377,7 +377,7 @@ class SC2Player {
 		  $endpos = strpos($soloLeague, 'badge-') - 1;
 		  $soloLeagueKey = trim( substr($soloLeague, 0, $endpos) );
 		  $jsonArray['soloLeague'] = $soloLeagueKey;
-		  
+
 		  if ( $soloLeagueKey !== 'none' )
 		  {
 		    $badgeRank = GeneralUtils::parseInt($bestSoloLeague);
@@ -394,8 +394,8 @@ class SC2Player {
   		    $jsonArray['soloTimesAchieved'] = $timesAchieved;
   		  }
 		  }
-		  
-		  
+
+
 		  // For team
 		  $bestTeam = $careerStats->find('#best-finish-TEAM', 0);
 
@@ -403,7 +403,7 @@ class SC2Player {
 		  $careerWords = $bestTeam->find('strong', 0)->plaintext;
 		  $timesWords = $bestTeam->find('strong', 1)->plaintext;
 		  $leagueWords = $bestTeam->find('strong', 2)->plaintext;
-		  
+
 		  // Team league key and rank
 		  $bestTeamLeague = $careerStats->find('.badge-item', 1);
 		  $bestTeamLeague = $bestTeamLeague->find('.badge span', 0)->getAttribute('class');
@@ -428,7 +428,7 @@ class SC2Player {
   		    	$jsonArray['teamTimesAchieved'] = $timesAchieved;
   		  	}
 		  }
-		  
+
 		  // Campaign
 		  // $badgeNode = $careerStats->find('.campaign', 0);
 		  // $badgeClass = $badgeNode->find('.badge', 0)->getAttribute('class');
@@ -436,32 +436,32 @@ class SC2Player {
 		  // $campaignKey = trim(substr($badgeClass, $startpos));
 		  // $jsonArray['campaign'] = $campaignKey;
 		}
-		
+
 		// // Add user's divisions
 		//    $divisions = array();
 		//    $divisionsNode = $playerHTML->find('.module-body .snapshot');
 		//    foreach ( $divisionsNode as $divisionNode ) {
-		//      
+		//
 		//      $divClass = $divisionNode->getAttribute('class');
 		//      if ( strpos($divClass, 'empty-season') !== FALSE ) {
 		//        // If this onedivion is empty, continue to next
 		//        continue;
 		//      }
-		//      
+		//
 		//      $oneDivision = array();
-		//      
+		//
 		//      // Get division league
 		//      $badge = $divisionNode->find('a .badge', 0)->getAttribute('class');
 		//      $startpos = strpos($badge, 'badge-') + strlen('badge-');
 		//      $endpos = strpos($badge, ' ', $startpos);
 		//      $league = substr($badge, $startpos, ($endpos - $startpos));
 		//      $oneDivision['league'] = strtolower($league);
-		//      
+		//
 		//      // Get division bracket
 		//      $divisionID = $divisionNode->find('.ladder', 0)->getAttribute('data-tooltip');
 		//      preg_match('/\d/', $divisionID, $matches);
 		//      $oneDivision['bracket'] = GeneralUtils::parseInt($matches[0]);
-		//      
+		//
 		//      // Get division name
 		//      $fullWords = $divisionNode->find("$divisionID div", 1)->plaintext;
 		//      $nameLabel = $divisionNode->find("$divisionID div strong", 0)->plaintext;
@@ -474,17 +474,17 @@ class SC2Player {
 		//      }else {
 		//        $oneDivision['name'] = "Grandmaster";
 		//      }
-		//      
+		//
 		//      // Get division url
 		//      $divisionURL = $divisionNode->find('.ladder a', 0)->getAttribute('href');
 		//      $divisionURL = $userBaseURL . $divisionURL;
 		//      $oneDivision['url'] = $divisionURL;
-		//      
+		//
 		//      // Get division rank
 		//      $startpos = strpos($fullWords, $rankLabel) + strlen($rankLabel);
 		//      $divisionRank = substr($fullWords, $startpos);
 		//      $oneDivision['rank'] = GeneralUtils::parseInt($divisionRank);
-		//  
+		//
 		//      // Get division wins
 		//      $theNodes = $divisionNode->find('.graph-bars .totals');
 		//      if ( count($theNodes) > 1 ) {
@@ -494,7 +494,7 @@ class SC2Player {
 		//        $wins = $divisionNode->find('.graph-bars .totals', 1)->plaintext;
 		//        $wins = GeneralUtils::parseInt($wins);
 		//        $losses = $totalGames - $wins;
-		//        
+		//
 		//        $oneDivision['wins'] = $wins;
 		//        $oneDivision['losses'] = $losses;
 		//      }else {
@@ -503,22 +503,22 @@ class SC2Player {
 		//        $wins = GeneralUtils::parseInt($wins);
 		//        $oneDivision['wins'] = $wins;
 		//      }
-		//      
+		//
 		//      $divisions[] = $oneDivision;
 		//    }
-		//    
+		//
 		//    $jsonArray['divisions'] = $divisions;
-		
+
 		// Finish bnet profile for player
 		return $jsonArray;
 	}
-	
+
 	/**
 	 * Quick function to add something to be printed
 	 */
 	public function addThingsToPrint($things)
 	{
-		$this->dataToPrint .= $things;	
+		$this->dataToPrint .= $things;
 	}
 }
 

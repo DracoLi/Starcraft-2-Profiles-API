@@ -3,13 +3,14 @@
 define('ENVIROMENT', 'DEVELOPMENT');		// DEVELOPMENT, PRODUCTION
 define('RANKSURL', 'http://www.sc2ranks.com');
 
-$ranksRegionMapper = array('global' => 'all',
+$ranksRegionMapper = array('global' => 'global',
 						               'na' => 'am',
 						               'krtw' => 'fea');
 
 // Map how BNET or Ranks displays region to what we want to display for our results
 $displayRegionMapper = array(
 	'krtw' => 'KR&TW',
+	'fea' => 'KR&TW',
 	'AM' => 'AM',
 	'KR/TW' => 'KR&TW',
 	'cn' => 'CN',
@@ -34,6 +35,12 @@ if ( ENVIROMENT == 'DEVELOPMENT' ) {
 // Redis setup
 require '../vendor/predis/predis/autoload.php';
 Predis\Autoloader::register();
-$redis = new Predis\Client('127.0.0.1:6379');
+$redisurl = NULL;
+if ( empty($_ENV["REDISTOGO_URL"]) ) {
+	$redisurl = '127.0.0.1:6379';
+}else {
+	$redisurl = $_ENV["REDISTOGO_URL"];
+}
+$redis = new Predis\Client(getenv('REDISTOGO_URL'));
 
 ?>

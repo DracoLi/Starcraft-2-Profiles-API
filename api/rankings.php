@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Retrieves a rankings page on ranks and caches it. 
+ * Retrieves a rankings page on ranks and caches it.
  * For GM rankings, we use crontab to auto cache. For SC2Ranks, users initiate caching.
  * Since we are caching, we can visit ranks directly.
  */
@@ -9,14 +9,14 @@ require_once('../classes/SC2Rankings.php');
 
 // Default Params, this is used when cettain options not specified
 $defaultParams = array('region' => 'global',
-					   'league' => 'grandmaster',
-					   'bracket' => '1',
-					   'race' => 'all',
-					   'offset' => 0,
-					   'update' => 'false',
-                       'game' => 'wol',
-					   'type' => 'json',
-					   'amount' => 20);
+										   'league' => 'grandmaster',
+										   'bracket' => '1',
+										   'race' => 'all',
+										   'offset' => 0,
+										   'update' => 'false',
+					             'game' => 'wol',
+										   'type' => 'json',
+										   'amount' => 20);
 
 // Get basic parameters
 $options = array();
